@@ -29,6 +29,8 @@ This command generates static content into the `build` directory and can be serv
 Using SSH:
 
 ```bash
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/my_custom_key
 USE_SSH=true yarn deploy
 ```
 

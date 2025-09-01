@@ -17,3 +17,8 @@ hola:
   label: Hola
   permalink: /hola
   description: Hola tag description
+
+haskell:
+  label: Haskell
+  permalink: /haskell
+  description: Haskell tag description
