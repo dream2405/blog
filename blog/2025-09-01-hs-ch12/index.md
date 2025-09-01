@@ -3,10 +3,14 @@ slug: monads-and-more
 title: Monads and more
 authors: [dream2405]
 tags: [haskell]
+image: "./image.png"
 ---
 
-하스켈에서는 parameterised type에 함수를 적용할 수 있는 여러 방법들이 있다.
+![banner](./image.png)
+
 <!-- truncate -->
+
+하스켈에서는 parameterised type에 함수를 적용할 수 있는 여러 방법들이 있다.
 
 ## Functors
 다음과 같은 간단한 함수들을 보자.
@@ -511,7 +515,7 @@ pairs xs ys = [(x,y) | x <- xs, y <- ys]
 
 \
 표준 라이브러리는 또한 `IO` 타입에 대한 인스턴스도 포함하며, 이는 상호작용 프로그래밍을 위한 `do` 표기법 사용을 지원한다. 위의 다른 예제들과 달리, 이 경우 `return`과 `>>=`의 정의는 하스켈 자체 내에서 정의되기보다는 언어에 내장되어 있다.
-```
+```haskell
 instance Monad IO where
     -- return :: a -> IO a
     return x = ...
@@ -519,3 +523,81 @@ instance Monad IO where
     -- (>>=) :: IO a -> (a -> IO b) -> IO b
     mx >>= f = ...
 ```
+
+### The state monad
+이제 시간에 따라 변할 수 있는 어떤 형태의 **상태(state)** 를 조작하는 함수를 작성하는 문제를 생각해 보자. 여기서는 간단하게 상태는 단지 정수 값이라고 가정하지만, 필요에 따라 수정될 수 있다:
+```haskell
+type State = Int
+```
+이 타입에 대한 가장 기본적인 형태의 함수는 상태 변환자(state transformer), 약자로 ST이다. 이것은 입력 상태를 인자로 받아서 결과로 출력 상태를 만들어내며, 이때 출력 상태는 함수 실행 중에 상태에 가해진 모든 변경 사항을 반영한다:
+```haskell
+type ST = State -> State
+```
+하지만 일반적으로, 상태를 갱신하는 것 외에도 결과 값을 반환하고 싶을 수 있다. 예를 들어, 상태가 카운터를 나타낸다면, 카운터를 증가시키는 함수는 그것의 현재 값을 반환하고 싶을 수도 있다. 이러한 이유로, 상태 변환자의 타입을 일반화하여 결과 값도 반환하도록 하며, 이러한 값의 타입은 ST 타입의 파라미터가 된다:
+```haskell
+type ST a = State -> (a, State)
+```
+\
+이러한 함수는 다음과 같이 그림 형태로 표시될 수 있다. 여기서 **s** 는 입력 상태, **s'** 는 출력 상태, **v** 는 결과 값이다:
+
+![img1](image-1.png)
+
+반대로, 상태 변환자는 인자 값을 받고 싶을 수도 있다. 하지만 이를 고려하기 위해 ST 타입을 더 일반화할 필요는 없는데, 왜냐하면 이러한 동작은 이미 **커링(currying)** 을 활용하여 달성할 수 있기 때문이다. 예를 들어, 문자를 받아서 정수를 반환하는 상태 변환자는 `Char -> ST Int` 타입을 가질 것이며, 이는 아래 그림과 같이 커링된 함수 타입인 `Char -> State -> (Int, State)`를 축약한 것이다:
+
+![img2](image-2.png)
+
+ST가 파라미터화된 타입이라는 점을 감안할 때, 이를 **모나드(monad)** 로 만들어서 상태가 있는(stateful) 프로그램을 작성하는 데 `do` 표기법을 사용할 수 있도록 시도하는 것은 자연스럽다. 하지만, `type` 메커니즘을 사용해 선언된 타입은 클래스의 인스턴스가 될 수 없다. 따라서, 먼저 newtype 메커니즘을 사용하여 `ST` 타입을 재정의하는데, 여기에는 **S** 라고 부르는 **더미 생성자(dummy constructor)** 를 도입해야 한다:
+```haskell
+newtype ST a = S (State -> (a, State))
+```
+
+또한 이 타입을 위해 더미 생성자를 단순히 제거하는 특수 목적의 적용 함수(application function)를 정의하는 것이 편리하다:
+```haskell
+app :: ST a -> State -> (a, State)
+app (S st) x = st x
+```
+
+파라미터화된 ST 타입을 모나드로 만들기 위한 첫 단계로서, 이 타입을 간단히 **펑터(functor)** 로 만들 수 있다.
+```haskell
+instance Functor ST where
+    -- fmap :: (a -> b) -> ST a -> ST b
+    fmap g st = S (\s -> let (x,s') = app st s in (g x, s'))
+```
+즉, `fmap`은 다음 그림에서처럼 상태 변환자의 결과 값에 함수를 적용하게 해준다.
+
+![img3](image-3.png)
+
+위 정의에 사용된 하스켈의 `let` 메커니즘은 `where` 메커니즘과 유사하지만, 함수 정의 수준이 아닌 표현식 수준에서 local definition을 할 수 있게 해준다는 점이 다르다. 
+결과적으로, `ST` 타입은 **어플리커티브 펑터(applicative functor)** 로 만들어질 수 있다.
+
+```haskell
+instance Applicative ST where
+    -- pure :: a -> ST a
+    pure x = S (\s -> (x,s))
+    
+    -- (<*>) :: ST (a -> b) -> ST a -> ST b
+    stf <*> stx = S (\s ->
+    let (f,s')   = app stf s
+        (x,s'')  = app stx s' in (f x, s''))
+```
+이 경우, `pure` 함수는 어떤 값을 상태 변경 없이 그대로 반환하는 상태 변환자로 변환한다.
+
+![img4](image-4.png)
+
+한편, `<*>` 연산자는 함수를 반환하는 상태 변환자를 인자를 반환하는 상태 변환자에 적용하여, 그 함수를 인자에 적용한 결과를 반환하는 상태 변환자를 만들어낸다.
+
+![img5](image-5.png)
+
+기호 `$`는 일반적인 함수 적용을 나타내며, `f $ x` = `f x`로 정의된다.
+
+마지막으로, `ST`에 대한 모나드 인스턴스는 다음과 같이 선언된다.
+```haskell
+instance Monad ST where
+    -- (>>=) :: ST a -> (a -> ST b) -> ST b
+    st >>= f = S (\s -> let (x,s') = app st s in app (f x) s')
+```
+즉, `st >>= f`는 상태 변환자 `st`를 초기 상태 `s`에 적용한 다음, 그 결과 값 `x`에 함수 `f`를 적용하여 새로운 상태 변환자 `f x`를 얻는다. 그리고 이 `f x`를 새로운 상태 `s'`에 적용하여 최종 결과를 얻는다.
+
+![img6](image-6.png)
+
+이런 방식으로, 상태 모나드의 **바인드(bind) 연산자(>>=)** 는 상태 변환자들의 순차적 실행과 그 결과 값의 처리를 통합한다. `>>=`의 정의 내에서는 첫 번째 인자의 결과 값 `x`에 따라 동작이 달라질 수 있는 새로운 상태 변환자 `f x`를 만들어내는 반면, `<*>`에서는 인자로 명시적으로 제공된 상태 변환자만 사용하도록 제한된다는 점에 주목해야 한다. 따라서 `>>=` 연산자를 사용하면 더 큰 유연성을 얻을 수 있다.
