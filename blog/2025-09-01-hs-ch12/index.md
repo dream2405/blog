@@ -156,7 +156,7 @@ Node (Leaf 2) (Leaf 3)
 두 번째 등식은 `fmap`이 **함수 합성을 보존**한다는 것을 의미한다.  
 즉, 두 함수의 합성에 `fmap`을 적용하는 것은, 두 함수 각각에 `fmap`을 적용한 뒤 그 결과를 합성하는 것과 결과가 같다. 이 합성이 타입 검사를 통과하려면, 구성 요소인 함수 `g`와 `h`는 각각 `b -> c`와 `a -> b` 타입을 가져야 한다.
 
-`fmap`의 다형적 타입과 결합된 이 펑터 법칙들은 fmap이 실제로 매핑(mapping) 연산을 수행하도록 보장한다. 예를 들어, 리스트의 경우 이 법칙들은 원소가 추가되거나, 제거되거나, 재배열되지 않고 인자로 주어진 리스트의 구조가 보존됨을 보장한다. 
+`fmap`의 다형적 타입과 결합된 이 펑터 법칙들은 `fmap`이 실제로 매핑(mapping) 연산을 수행하도록 보장한다. 예를 들어, 리스트의 경우 이 법칙들은 원소가 추가되거나, 제거되거나, 재배열되지 않고 인자로 주어진 리스트의 구조가 보존됨을 보장한다. 
 
 만약 내장 리스트 펑터를 리스트 원소의 순서를 뒤집는 `fmap`의 대체 버전으로 교체했다고 가정해 보자.
 ```haskell
@@ -348,13 +348,13 @@ getChars n = sequenceA (replicate n getChar)
 
 ### Applicative laws
 `pure`와 `<*>` 함수를 제공하는 것 외에도, 어플리커티브 펑터는 네 가지 등식 법칙을 만족해야 한다.
-1. `pure id <*> x` = `x`
+- `pure id <*> x` = `x`
     - **항등(Identity)** : `pure`가 항등 함수를 보존한다는 것을 말한다. 즉, `pure id`를 적용하는 것은 아무것도 하지 않는 것과 같다.
-2. `pure (g x)` = `pure g <*> pure x`
+- `pure (g x)` = `pure g <*> pure x`
     - **동형사상(Homomorphism)** : `pure`가 함수 적용 또한 보존함을 말한다. `pure`는 일반적인 함수 적용을 어플리커티브 함수 적용으로 분배할 수 있다.
-3. `x <*> pure y` = `pure (\g -> g y) <*> x`
+- `x <*> pure y` = `pure (\g -> g y) <*> x`
     - **교환(Interchange)** : effectful 함수를 순수한(pure) 인자에 적용할 때, 두 구성 요소의 평가 순서는 중요하지 않다는 것을 말한다.
-4. `x <*> (y <*> z)` = `(pure (.) <*> x <*> y) <*> z`
+- `x <*> (y <*> z)` = `(pure (.) <*> x <*> y) <*> z`
     - **결합(Composition)** : 관련된 타입들을 제외하면 `<*>` 연산자가 결합 법칙을 만족한다는 것을 말한다.
 
 이 어플리커티브 법칙들은 `pure :: a -> f a` 함수에 대한 우리의 직관, 즉 `a` 타입의 값을 `f` 타입의 세상에 심는다는 개념을 공식화한다. 또한 이 법칙들은 `pure` 함수와 `<*>` 연산자를 사용하여 구축된 모든 타입이 올바른 표현식은 어플리커티브 스타일로 다시 작성될 수 있음을 보장한다. 즉, 다음과 같은 형태이다.
@@ -601,3 +601,136 @@ instance Monad ST where
 ![img6](image-6.png)
 
 이런 방식으로, 상태 모나드의 **바인드(bind) 연산자(>>=)** 는 상태 변환자들의 순차적 실행과 그 결과 값의 처리를 통합한다. `>>=`의 정의 내에서는 첫 번째 인자의 결과 값 `x`에 따라 동작이 달라질 수 있는 새로운 상태 변환자 `f x`를 만들어내는 반면, `<*>`에서는 인자로 명시적으로 제공된 상태 변환자만 사용하도록 제한된다는 점에 주목해야 한다. 따라서 `>>=` 연산자를 사용하면 더 큰 유연성을 얻을 수 있다.
+
+### Relabelling trees
+stateful programming의 한 예시로서, 트리의 라벨을 다시 붙이는 함수를 개발해 보자.  
+이를 위해 다음 타입을 사용한다.
+```haskell
+data Tree a = Leaf a | Node (Tree a) (Tree a)
+    deriving Show
+```
+
+예를 들어, 다음과 같이 정의할 수 있다.
+```haskell
+tree :: Tree Char
+tree = Node (Node (Leaf 'a') (Leaf 'b')) (Leaf 'c')
+```
+이제 이런 트리 내의 각 리프(leaf)를 고유한, 즉 새로운(fresh) 정수로 재라벨링하는 함수를 정의하는 문제를 생각해 보자. 하스켈과 같은 순수 언어에서는 다음에 사용할 새 정수를 추가 인자로 받고, 그 다음 사용할 정수를 추가 결과로 반환하는 방식으로 이를 구현할 수 있다.
+```haskell
+rlabel :: Tree a -> Int -> (Tree Int, Int)
+rlabel (Leaf _) n = (Leaf n, n+1)
+rlabel (Node l r) n = (Node l' r', n'')
+    where
+        (l',n')   = rlabel l n
+        (r',n'')  = rlabel r n'
+```
+그러면, 이 예시에서는 다음과 같은 결과를 얻는다.
+```haskell
+> fst (rlabel tree 0)
+Node (Node (Leaf 0) (Leaf 1)) (Leaf 2)
+```
+하지만 `rlabel`의 정의는 정수 상태를 계산 과정 전체에 걸쳐 명시적으로 전달해야 할 필요성 때문에 복잡하다. 더 간단한 정의를 얻기 위해, 먼저 `Tree a -> Int -> (Tree Int, Int)` 타입이 상태 변환자 타입을 사용하여 `Tree a -> ST (Tree Int)`로 다시 작성될 수 있다는 점에 주목한다. 여기서 상태는 다음에 사용할 새 정수이다. 이러한 다음 정수는 현재 상태를 결과로, 그리고 다음 정수를 새로운 상태로 반환하는 상태 변환자를 정의함으로써 생성할 수 있다.
+```haskell
+fresh :: ST Int
+fresh = S (\n -> (n, n+1))
+```
+`ST`가 어플리커티브 펑터라는 사실을 이용하여, 이제 어플리커티브 스타일로 작성된 새로운 버전의 재라벨링 함수를 정의할 수 있다.
+```haskell
+alabel :: Tree a -> ST (Tree Int)
+alabel (Leaf _) = Leaf <$> fresh
+alabel (Node l r) = Node <$> alabel l <*> alabel r
+```
+(참고: `g <$> x <*> y`는 `pure g <*> x <*> y`와 동일하게 동작한다.)  
+이 새로운 버전은 이전과 동일한 결과를 준다.
+```haskell
+> fst (app (alabel tree) 0)
+Node (Node (Leaf 0) (Leaf 1)) (Leaf 2)
+```
+하지만 그 정의는 훨씬 더 간단하다. 기본 케이스(base case)에서는 이제 `Leaf` 생성자를 다음 새 정수에 적용하기만 하면 되고, 재귀 케이스에서는 두 서브트리를 라벨링한 결과에 `Node` 생성자를 적용한다. 특히, 프로그래머는 더 이상 정수 상태를 계산 과정에 일일이 전달하는 지루하고 오류가 발생하기 쉬운 작업에 대해 걱정할 필요가 없다. 이 작업은 어플리커티브 메커니즘에 의해 자동으로 처리되기 때문이다.
+
+`ST`가 모나드이기도 하다는 사실을 이용하여, `do` 표기법을 사용해 이와 동일한 기능의 모나드 버전 재라벨링 함수를 정의할 수 있다.
+```haskell
+mlabel :: Tree a -> ST (Tree Int)
+mlabel (Leaf _) = do n <- fresh
+                     return (Leaf n)
+
+mlabel (Node l r) = do l' <- mlabel l
+                       r' <- mlabel r
+                       return (Node l' r')
+```
+이 정의는 중간 결과에 이름을 붙여줘야 한다는 점을 제외하면 어플리커티브 버전과 유사하다. `rlabel`과 같은 비-제네릭(non-generic) 함수가 어플리커티브와 모나드 스타일 모두로 정의될 수 있을 때, 어떤 정의를 선호할지는 대체로 취향의 문제이다.
+
+### Generic functions
+모나드라는 개념을 추상화함으로써 얻는 중요한 이점은 어떤 모나드에든 사용할 수 있는 **제네릭 함수(generic function)** 를 정의할 수 있다는 것이다. `Control.Monad` 라이브러리에는 다수의 그런 함수들이 제공된다.  
+예를 들어, 리스트에 대한 `map` 함수의 모나드 버전은 다음과 같이 정의할 수 있다.
+```haskell
+mapM :: Monad m => (a -> m b) -> [a] -> m [b]
+mapM f []     = return []
+mapM f (x:xs) = do y  <- f x
+                   ys <- mapM f xs
+                   return (y:ys)
+```
+`mapM`은 인자로 받는 함수와 함수 자체의 반환 타입이 이제 모나드 타입이라는 점을 제외하면 `map`과 동일한 타입을 갖는다는 점에 주목하자. 이것이 어떻게 사용될 수 있는지 설명하기 위해, 주어진 문자가 숫자일 경우에만 그 문자를 해당하는 숫자 값으로 변환하는 함수를 생각해 보자.
+```haskell
+conv :: Char -> Maybe Int
+conv c | isDigit c = Just (digitToInt c)
+       | otherwise = Nothing
+```
+(`isDigit`와 `digitToInt` 함수는 `Data.Char`에서 제공된다.) `mapM`을 `conv` 함수에 적용하면 숫자 문자열을 해당하는 숫자 값의 리스트로 변환하는 수단을 얻게 된다. 이 변환은 문자열의 모든 문자가 숫자일 경우에만 성공하고, 그렇지 않으면 실패한다.
+```haskell
+> mapM conv "1234"
+Just [1,2,3,4]
+
+> mapM conv "123a"
+Nothing
+```
+다음으로, 리스트에 대한 `filter` 함수의 모나드 버전은 `mapM`과 유사한 방식으로 타입과 정의를 일반화하여 정의된다.
+```haskell
+filterM :: Monad m => (a -> m Bool) -> [a] -> m [a]
+filterM p []     = return []
+filterM p (x:xs) = do b  <- p x
+                      ys <- filterM p xs
+                      return (if b then x:ys else ys)
+```
+예를 들어, 리스트 모나드의 경우 `filterM`을 사용하면 리스트의 **멱집합(powerset)** 을 특히 간결하게 계산하는 수단을 얻을 수 있다. 멱집합은 리스트의 각 원소를 포함하거나 제외하는 모든 가능한 경우의 수로 주어진다.
+```haskell
+> filterM (\x -> [True,False]) [1,2,3]
+[[1,2,3],[1,2],[1,3],[1],[2,3],[2],[3],[]]
+```
+마지막 예로, 리스트에 대한 `prelude` 함수 `concat :: [[a]] -> [a]`는 임의의 모나드에 대해 다음과 같이 `join` 함수로 일반화된다.
+```haskell
+join :: Monad m => m (m a) -> m a
+join mmx = do mx <- mmx
+              x  <- mx
+              return x
+```
+이 함수는 중첩된 모나드 값을 일반 모나드 값으로 평탄화(flatten)한다. 리스트 모나드에 대해서는 `concat`과 동일한 방식으로 동작하는 한편, `Maybe` 모나드에 대해서는 바깥쪽과 안쪽 값 모두 성공(`Just`)일 경우에만 성공한다.
+```haskell
+> join [[1,2],[3,4],[5,6]]
+[1,2,3,4,5,6]
+
+> join (Just (Just 1))
+Just 1
+
+> join (Just Nothing)
+Nothing
+
+> join Nothing
+Nothing
+```
+
+### Monad laws
+펑터나 어플리커티브와 비슷한 방식으로, 두 모나드 기본 연산(primitive)은 몇 가지 등식 법칙을 만족해야 한다.
+- `return x >>= f` = `f x`
+- `mx >>= return` = `mx`
+- `(mx >>= f) >>= g` = `mx >>= (\x -> (f x >>= g))`
+
+첫 두 등식은 `return`과 `>>=` 사이의 관계에 대한 것이다.
+
+**첫 번째 등식(좌항등원, Left identity)** 은, 어떤 값을 `return`한 뒤 그 결과를 모나드 함수에 넘기는 것은 단순히 그 함수를 값에 적용하는 것과 같은 결과를 주어야 한다는 것을 나타낸다.
+
+**두 번째 등식(우항등원, Right identity)** 은, 모나드 계산의 결과를 `return` 함수에 넘기는 것은 단순히 그 계산을 수행하는 것과 같은 결과를 주어야 한다는 것을 나타낸다.
+
+종합하면, 이 두 등식은 (`>>=`의 두 번째 인자가 바인딩 연산을 포함한다는 점을 감안하면) `return`이 `>>=` 연산자에 대한 항등원(identity)이라는 것을 말해준다.
+
+**세 번째 등식(결합법칙, Associativity)** 은 `>>=`와 자신 사이의 관계에 대한 것으로, (`>>=`가 바인딩을 포함한다는 점을 다시 감안하면) `>>=`가 결합법칙을 만족함을 표현한다. 이 등식의 우변을 단순히 `mx >>= (f >>= g)`로 쓸 수는 없다는 점에 주목해야 하는데, 이는 타입 검사를 통과하지 못할 것이기 때문이다. 우리가 지금까지 봐온 모든 모나드는 위의 법칙들을 만족한다.
