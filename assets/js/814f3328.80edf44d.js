@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkmy_website=self.webpackChunkmy_website||[]).push([[472],{5513:e=>{e.exports=JSON.parse('{"title":"Recent posts","items":[{"title":"Monads and more","permalink":"/blog/monads-and-more","unlisted":false,"date":"2025-09-01T00:00:00.000Z"}]}')}}]);
