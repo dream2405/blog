@@ -2,7 +2,7 @@
 slug: monads-and-more
 title: Monads and more
 authors: [dream2405]
-tags: [haskell]
+tags: [haskell, functional_programming]
 image: "./image.png"
 ---
 
