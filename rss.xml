@@ -13,8 +13,9 @@
             <link>https://dream2405.github.io/blog/foldables-and-friends/</link>
             <guid>https://dream2405.github.io/blog/foldables-and-friends/</guid>
             <pubDate>Thu, 04 Sep 2025 00:00:00 GMT</pubDate>
-            <description><![CDATA[이 글에서는 하스켈에서 데이터 구조의 값들을 처리하는 세 가지 일반적인 패턴을 소개한다. 먼저 값을 결합하는 데 결합 연산자(associative operator)를 사용하는 모노이드(monoids) 로 시작해, 그 다음으로 리스트에 대한 폴딩(folding) 개념을 매개변수화된 타입으로 일반화하는 폴더블(foldables) 을 살펴보고, 매핑(mapping)의 개념을 더욱 일반화하는 트래버서블(traversables) 로 마무리할 것이다.]]></description>
-            <content:encoded><![CDATA[<p>이 글에서는 하스켈에서 데이터 구조의 값들을 처리하는 세 가지 일반적인 패턴을 소개한다. 먼저 값을 결합하는 데 결합 연산자(associative operator)를 사용하는 <strong>모노이드(monoids)</strong> 로 시작해, 그 다음으로 리스트에 대한 폴딩(folding) 개념을 매개변수화된 타입으로 일반화하는 <strong>폴더블(foldables)</strong> 을 살펴보고, 매핑(mapping)의 개념을 더욱 일반화하는 <strong>트래버서블(traversables)</strong> 로 마무리할 것이다.</p>
+            <description><![CDATA[banner]]></description>
+            <content:encoded><![CDATA[<p><img decoding="async" loading="lazy" alt="banner" src="https://dream2405.github.io/blog/assets/images/image-6202ed0ce435d6b35da6e345b4ca8ba7.png" width="1204" height="696" class="img_ev3q"></p>
+<p>이 글에서는 하스켈에서 데이터 구조의 값들을 처리하는 세 가지 일반적인 패턴을 소개한다. 먼저 값을 결합하는 데 결합 연산자(associative operator)를 사용하는 <strong>모노이드(monoids)</strong> 로 시작해, 그 다음으로 리스트에 대한 폴딩(folding) 개념을 매개변수화된 타입으로 일반화하는 <strong>폴더블(foldables)</strong> 을 살펴보고, 매핑(mapping)의 개념을 더욱 일반화하는 <strong>트래버서블(traversables)</strong> 로 마무리할 것이다.</p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="monoids">Monoids<a href="https://dream2405.github.io/blog/foldables-and-friends/#monoids" class="hash-link" aria-label="Monoids에 대한 직접 링크" title="Monoids에 대한 직접 링크">​</a></h2>
 <p>수학에서 모노이드란 집합의 두 원소를 결합하는 결합 연산자(associative operator)와, 그 연산자에 대한 항등원(identity element)을 갖춘 집합이다. 예를 들어, 정수 집합은 덧셈 연산과 항등원인 0으로 모노이드를 형성한다.</p>
 <p>하스켈에서는 모노이드의 개념이 다음과 같은 내장 클래스 선언으로 구현된다.</p>
