@@ -18,6 +18,21 @@ There are two main advantages of such an approach. Firstly, the compiler, target
 
 In chapter 16 we presented a compiler for arithmetic expressions, and proved its correctness. In this chapter we show how the compiler can be calculated directly from a statement of its correctness. We develop our approach in two stages, first introducing the basic ideas using a series of transformation steps, and then showing how the separate steps can be combined into a single step. For simplicity, we restrict our attention to arithmetic expressions, but the same techniques can also be used to calculate compilers for more sophisticated languages.
 
+:::note
+
+이런 방식의 접근법은 설계도로 건물을 만드는 것과 비슷하다.
+
+1. 설계도 준비 - 언어의 의미론적 정의(Semantics), 즉 "이 언어의 각 구문은 어떤 의미를 가지며 어떻게 동작해야 하는가"라는 최상위 명세서를 만듦
+2. 건설 - 이 명세서에 수학적이고 논리적인 변환 규칙을 적용
+3. 완공 - 이 과정을 통해 소스 코드를 Target Code로 변환하는 프로그램, 즉 컴파일러 자체가 자동으로 생성(유도)
+
+만약 사용자가 직접 컴파일러를 만들면, 컴파일러가 모든 경우에 대해 올바르게 동작하는지 수많은 테스트와 증명을 거쳐야 하지만, 이런 방식은 수학적 증명과 같은 논리적 단계를 통해 컴파일러를 자동으로 유도해낸다.
+
+시작점(언어의 정의)이 올바르고 변환 과정(논리 규칙)에 결함이 없다면, 그 결과물인 컴파일러는 태생적으로 정확할 수밖에 없다.
+이것이 컴파일러 유도의 핵심이다.
+
+:::
+
 ## Syntax and semantics
 
 We start in the same manner as the compiler correctness example from the previous chapter, with two definitions that respectively capture the syntax (form) and semantics (meaning) of a simple language of arithmetic expressions built up from integer values using an addition operator:
@@ -372,3 +387,160 @@ Expanding the right-hand sides of these equations using the original specificati
 
 - `exec (comp e) s` $=$ `eval e : s`
 - `exec (comp' e c) s` $=$ `exec c (eval e : s)`
+
+## Combining the steps
+
+We have now shown how an evaluation function for arithmetic expressions can be transformed into a compiler using a systematic three-step process:
+
+1. calculate a generalised evaluation function that uses a stack;
+2. calculate a further generalised version that uses a continuation;
+3. defunctionalise to produce a compiler and a virtual machine.
+
+However, there appear to be some opportunities for simplifying this process. In particular, steps 1 and 2 both calculate generalised versions of the original evaluation function. Could these steps be combined to avoid the need for separate generalisation steps? In turn, step 2 introduces the use of continuations, which are then immediately removed in step 3. Could these steps be combined the avoid the need for continuations? In fact, it turns out that **all** the transformation steps can be combined together. This section shows how this can be achieved, and explains the benefits that result from doing so.
+
+In order to simplify the above stepwise process, let us first consider the types and functions that are involved in the process in more detail. We started off by defining a type `Expr` that represents the syntax of the source language, together with an evaluation function `eval :: Expr -> Int` that provides a semantics for the language, and a type `Stack` that represents a stack of integer values. 
+
+Then we derived four additional components:
+
+- a type `Code` that represents code for the virtual machine;
+- a function `comp :: Expr -> Code` that compiles expressions to code;
+- a function `comp' :: Expr -> Code -> Code` with a code argument;
+- a function `exec :: Code -> Stack -> Stack` that executes code.
+
+Moreover, the relationships between the semantics, compilers and virtual machine were captured by the following two correctness equations:
+
+- `exec (comp e) s` $=$ `eval e : s`
+- `exec (comp' e c) s` $=$ `exec c (eval e : s)`
+
+The key to combining the transformation steps is to use these two equations directly as a **specification** for the four additional components, from which we then aim to calculate definitions that satisfy the specification. Given that the equations involve three known definitions (`Expr`, `eval` and `Stack`) and four unknown definitions (`Code`, `comp`, `comp'` and `exec`), this may seem like an impossible task. However, with the benefit of the experience gained from our earlier calculations in the previous sections, it turns out to be straightforward.
+
+We begin with the correctness equation for `comp'`, and proceed by induction on the expression `e`. In each case, we aim to rewrite the left-hand side `exec (comp' e c) s` of the equation into the form `exec c' s` for some code `c'`, from which we can then conclude that the definition `comp' e c = c'` satisfies the specification in this case. In order to do this we will find that we need to introduce new constructors into the `Code` type, along with their interpretation by the function `exec`. In the base case, `Val n`, we proceed as follows:
+
+```haskell
+  exec (comp' (Val n) c) s
+= { specification of comp' }
+  exec c (eval (Val n) : s)
+= { applying eval }
+  exec c (n : s)
+```
+
+Now we appear to be stuck, as no further definitions can be applied. However, recall that we are aiming to end up with a term of the form `exec c' s` for some code `c'`. Hence, to complete the calculation we need to solve the equation:
+
+- `exec c' s` $=$ `exec c (n : s)`
+
+Note that we can’t simply use this equation as a definition for `exec`, because the variables `n` and `c` would be unbound in the body of the definition. The solution is to package these two variables up in the code argument `c'` by means of a new constructor in the `Code` type that takes these variables as arguments,
+
+```haskell
+PUSH :: Int -> Code -> Code
+```
+
+and define a new equation for `exec` as follows:
+
+```haskell
+exec (PUSH n c) s = exec c (n : s)
+```
+
+That is, executing the code `PUSH n c` proceeds by pushing the value `n` onto the stack and then executing the code `c`, hence the choice of the name for the new constructor. 
+
+Using these ideas, it is now easy to complete the calculation:
+
+```haskell
+  exec c (n : s)
+= { unapplying exec }
+  exec (PUSH n c) s
+```
+
+The final term now has the form `exec c' s`, where `c'` $=$ `PUSH n c`, from which we conclude that the specification is satisfied in the base case by defining:
+
+```haskell
+comp' (Val n) c = PUSH n c
+```
+
+For the inductive case, `Add x y`, we begin in the same way as above by first applying the specification and the definition of the evaluation function:
+
+```haskell
+  exec (comp' (Add x y) c) s
+= { specification of comp' }
+  exec c (eval (Add x y) : s)
+= { applying eval }
+  exec c (eval x + eval y : s)
+```
+
+Once again we appear to be stuck, as no further definitions can be applied. However, as we are performing an inductive calculation, we can make use of the induction hypotheses for the two argument expressions `x` and `y`, namely
+
+- `exec (comp' x c') s'` $=$ `exec c' (eval x : s')`
+- `exec (comp' y c') s'` $=$ `exec c' (eval y : s')`
+
+In order to use these hypotheses, it is clear that we must push the values `eval x` and `eval y` onto the stack, by transforming the term that we are manipulating into the form `exec c' (eval y : eval x : s)` for some code `c'`. That is, we need to solve the following equation:
+
+- `exec c' (eval y : eval x : s)` $=$ `exec c (eval x + eval y : s)`
+
+First of all, we generalise from specific values `eval x` and `eval y` to give:
+
+- `exec c' (m : n : s)` $=$ `exec c (n+m : s)`
+
+Once again, however, we can't use this equation as a definition for `exec`, this time because the variable `c` is unbound. The solution is to package this variable up in the code argument `c'` by means of a new constructor in the `Code` type
+
+```haskell
+ADD :: Code -> Code
+```
+
+and define a new equation for `exec` as follows:
+
+```haskell
+exec (ADD c) (m : n : s) = exec c (n+m : s)
+```
+
+That is, executing the code `ADD c` proceeds by adding the top two values on the stack and then executing the code `c`, hence the choice of the name for the new constructor. Using these ideas, it is now easy to complete the calculation:
+
+```haskell
+  exec c (eval x + eval y : s)
+= { unapplying exec }
+  exec (ADD c) (eval y : eval x : s)
+= { induction hypothesis for y }
+  exec (comp' y (ADD c)) (eval x : s)
+= { induction hypothesis for x }
+  exec (comp' x (comp' y (ADD c))) s
+```
+
+The final term now has the form `exec c' s`, from which we conclude that the specification is satisfied in the inductive case by defining:
+
+```haskell
+comp' (Add x y) c = comp' x (comp' y (ADD c))
+```
+□
+
+Note that as in our earlier calculation of the stack-based evaluator, we chose to transform the stack into the form `eval y : eval x : s`. We could equally well have chosen the opposite order, `eval x : eval y : s`, which would have resulted in right-to-left evaluation for `Add`. We have this freedom in the calculation because the semantics defined by `eval` does not specify an evaluation order.
+
+Finally, we complete the development of our compiler by considering the function `comp :: Expr -> Code` specified by the equation `exec (comp e) s` $=$ `eval e : s`. In a similar manner to above, we aim to rewrite the left-hand side `exec (comp e) s` of the equation into the form `exec c s` for some code `c`, from which we can then conclude that the definition `comp e = c` satisfies the specification. In this case there is no need to use induction as simple calculation suffices, during which we introduce a new constructor `HALT :: Code` in order to transform the term being manipulated into the required form:
+
+```haskell
+  exec (comp e) s
+= { specification of comp }
+  eval e : s
+= { define: exec HALT s = s }
+  exec HALT (eval e : s)
+= { specification of comp' }
+  exec (comp' e HALT) s
+```
+□
+
+In conclusion, we have calculated the following definitions:
+
+```haskell
+data Code = HALT | PUSH Int Code | ADD Code
+
+comp :: Expr -> Code
+comp e = comp' e HALT
+
+comp' :: Expr -> Code -> Code
+comp' (Val n)   c = PUSH n c
+comp' (Add x y) c = comp' x (comp' y (ADD c))
+
+exec :: Code -> Stack -> Stack
+exec HALT         s       = s
+exec (PUSH n c)   s       = exec c (n : s)
+exec (ADD c)      (m:n:s) = exec c (n+m : s)
+```
+
+These are precisely the same definitions as we produced in the previous section, except that they have now been calculated directly from a specification of compiler correctness, rather than indirectly by means of a series of separate transformation steps. Moreover, the combined approach also has the advantage that it only uses simple equational reasoning techniques. In particular, the use of continuations and defunctionalisation is no longer required!
