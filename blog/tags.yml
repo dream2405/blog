@@ -37,3 +37,23 @@ C++:
   label: C++
   permalink: /cpp
   description: C++ tag description
+
+review:
+  label: review
+  permalink: /review
+  description: 리뷰
+
+git:
+  label: Git
+  permalink: /git
+  description: Git tag description
+
+github:
+  label: GitHub
+  permalink: /github
+  description: GitHub tag description
+
+cheatsheet:
+  label: Cheat Sheet
+  permalink: /cheat-sheet
+  description: Cheat Sheet tag description
