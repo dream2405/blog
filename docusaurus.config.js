@@ -137,7 +137,7 @@ const config = {
       prism: {
         theme: prismThemes.github,
         darkTheme: prismThemes.nightOwl,
-        additionalLanguages: ['haskell'],
+        additionalLanguages: ['haskell', 'bash'],
       },
     }),
 };

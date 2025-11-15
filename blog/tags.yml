@@ -33,6 +33,16 @@ concurrent_programming:
   permalink: /concurrent-programming
   description: 동시성 프로그래밍에 대한 글
 
+networking:
+  label: 네트워킹
+  permalink: /networking
+  description: 네트워킹에 대한 글
+
+C:
+  label: C
+  permalink: /c
+  description: C tag description
+
 C++:
   label: C++
   permalink: /cpp
