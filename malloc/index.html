@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="ko" dir="ltr" class="blog-wrapper blog-post-page plugin-blog plugin-id-default" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.8.1">
+<title data-rh="true">C언어의 메모리 할당과 Malloc | 낙서장</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://dream2405.github.io/blog/malloc/"><meta data-rh="true" property="og:locale" content="ko"><meta data-rh="true" name="docusaurus_locale" content="ko"><meta data-rh="true" name="docusaurus_tag" content="default"><meta data-rh="true" name="docsearch:language" content="ko"><meta data-rh="true" name="docsearch:docusaurus_tag" content="default"><meta data-rh="true" property="og:title" content="C언어의 메모리 할당과 Malloc | 낙서장"><meta data-rh="true" name="description" content="이 게시글은 C언어의 malloc에 대해 좀 더 자세하게 알아보기 위해 작성됐다."><meta data-rh="true" property="og:description" content="이 게시글은 C언어의 malloc에 대해 좀 더 자세하게 알아보기 위해 작성됐다."><meta data-rh="true" property="og:image" content="https://dream2405.github.io/blog/assets/images/image-6-b3b6a0c17335c04b2bd33834c9b5a021.png"><meta data-rh="true" name="twitter:image" content="https://dream2405.github.io/blog/assets/images/image-6-b3b6a0c17335c04b2bd33834c9b5a021.png"><meta data-rh="true" property="og:type" content="article"><meta data-rh="true" property="article:published_time" content="2025-09-03T00:00:00.000Z"><meta data-rh="true" property="article:tag" content="C"><link data-rh="true" rel="icon" href="/blog/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://dream2405.github.io/blog/malloc/"><link data-rh="true" rel="alternate" href="https://dream2405.github.io/blog/malloc/" hreflang="ko"><link data-rh="true" rel="alternate" href="https://dream2405.github.io/blog/malloc/" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","@id":"https://dream2405.github.io/blog/malloc","mainEntityOfPage":"https://dream2405.github.io/blog/malloc","url":"https://dream2405.github.io/blog/malloc","headline":"C언어의 메모리 할당과 Malloc","name":"C언어의 메모리 할당과 Malloc","description":"이 게시글은 C언어의 malloc에 대해 좀 더 자세하게 알아보기 위해 작성됐다.","datePublished":"2025-09-03T00:00:00.000Z","author":{"@type":"Person","name":"dream2405","description":"게으른 대학생","image":"https://github.com/dream2405.png"},"image":{"@type":"ImageObject","@id":"https://dream2405.github.io/blog/assets/images/image-6-b3b6a0c17335c04b2bd33834c9b5a021.png","url":"https://dream2405.github.io/blog/assets/images/image-6-b3b6a0c17335c04b2bd33834c9b5a021.png","contentUrl":"https://dream2405.github.io/blog/assets/images/image-6-b3b6a0c17335c04b2bd33834c9b5a021.png","caption":"title image for the blog post: C언어의 메모리 할당과 Malloc"},"keywords":[],"isPartOf":{"@type":"Blog","@id":"https://dream2405.github.io/blog/","name":"Blog"}}</script><link rel="alternate" type="application/rss+xml" href="/blog/rss.xml" title="낙서장 RSS Feed">
+<link rel="alternate" type="application/atom+xml" href="/blog/atom.xml" title="낙서장 Atom Feed">
+
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.24/dist/katex.min.css" integrity="sha384-odtC+0UGzzFL/6PNoE8rX/SPcQDXBJ+uRepguP4QkPCm2LBxH3FA3y+fKSiJ+AmM" crossorigin="anonymous"><link rel="stylesheet" href="/blog/assets/css/styles.492b1270.css">
+<script src="/blog/assets/js/runtime~main.5b09225e.js" defer="defer"></script>
+<script src="/blog/assets/js/main.aa29e0fb.js" defer="defer"></script>
+</head>
+<body class="navigation-with-keyboard">
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;"><defs>
+<symbol id="theme-svg-external-link" viewBox="0 0 24 24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></symbol>
+</defs></svg>
+<script>!function(){var t="light";var e=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();document.documentElement.setAttribute("data-theme",e||t),document.documentElement.setAttribute("data-theme-choice",e||t)}(),function(){try{const c=new URLSearchParams(window.location.search).entries();for(var[t,e]of c)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><link rel="preload" as="image" href="/blog/img/logo.svg"><link rel="preload" as="image" href="https://github.com/dream2405.png"><div role="region" aria-label="본문으로 건너뛰기"><a class="skipToContent_fXgn" href="#__docusaurus_skipToContent_fallback">본문으로 건너뛰기</a></div><nav aria-label="메인" class="theme-layout-navbar navbar navbar--fixed-top"><div class="navbar__inner"><div class="theme-layout-navbar-left navbar__items"><a class="navbar__brand" href="/blog/"><div class="navbar__logo"><img src="/blog/img/logo.svg" alt="My Site Logo" class="themedComponent_mlkZ themedComponent--light_NVdE"><img src="/blog/img/logo.svg" alt="My Site Logo" class="themedComponent_mlkZ themedComponent--dark_xIcU"></div><b class="navbar__title text--truncate">낙서장</b></a></div><div class="theme-layout-navbar-right navbar__items navbar__items--right"><div class="toggle_vylO colorModeToggle_DEke"><button class="clean-btn toggleButton_gllP toggleButtonDisabled_aARS" type="button" disabled="" title="system mode" aria-label="어두운 모드와 밝은 모드 전환하기 (현재 system mode)"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP lightToggleIcon_pyhR"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP darkToggleIcon_wfgR"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP systemToggleIcon_QzmC"><path fill="currentColor" d="m12 21c4.971 0 9-4.029 9-9s-4.029-9-9-9-9 4.029-9 9 4.029 9 9 9zm4.95-13.95c1.313 1.313 2.05 3.093 2.05 4.95s-0.738 3.637-2.05 4.95c-1.313 1.313-3.093 2.05-4.95 2.05v-14c1.857 0 3.637 0.737 4.95 2.05z"></path></svg></button></div><div class="navbarSearchContainer_Bca1"></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="theme-layout-main main-wrapper mainWrapper_z2l0"><div class="container margin-vert--lg"><div class="row"><aside class="col col--3"><nav class="sidebar_re4s thin-scrollbar" aria-label="최근 블로그 문서 둘러보기"><div class="sidebarItemTitle_pO2u margin-bottom--md">Recent posts</div><div role="group"><h3 class="yearGroupHeading_rMGB">2025</h3><ul class="sidebarItemList_Yudw clean-list"><li class="sidebarItem__DBe"><a class="sidebarItemLink_mo7H" href="/blog/calculating-compilers/">Calculating compilers</a></li><li class="sidebarItem__DBe"><a class="sidebarItemLink_mo7H" href="/blog/reasoning-about-programs/">Reasoning about programs</a></li><li class="sidebarItem__DBe"><a class="sidebarItemLink_mo7H" href="/blog/lazy-evaluation/">Lazy evaluation</a></li><li class="sidebarItem__DBe"><a class="sidebarItemLink_mo7H" href="/blog/foldables-and-friends/">Foldables and friends</a></li><li class="sidebarItem__DBe"><a aria-current="page" class="sidebarItemLink_mo7H sidebarItemLinkActive_I1ZP" href="/blog/malloc/">C언어의 메모리 할당과 Malloc</a></li></ul></div></nav></aside><main class="col col--7"><article class=""><header><h1 class="title_f1Hy">C언어의 메모리 할당과 Malloc</h1><div class="container_mt6G margin-vert--md"><time datetime="2025-09-03T00:00:00.000Z">2025년 9월 3일</time> · <!-- -->약 21분</div><div class="margin-top--md margin-bottom--sm row"><div class="col col--12 authorCol_Hf19"><div class="avatar margin-bottom--sm"><img class="avatar__photo authorImage_XqGP" src="https://github.com/dream2405.png" alt="dream2405"><div class="avatar__intro authorDetails_lV9A"><div class="avatar__name"><span class="authorName_yefp">dream2405</span></div><small class="authorTitle_nd0D" title="게으른 대학생">게으른 대학생</small><div class="authorSocials_rSDt"><a href="https://github.com/dream2405" target="_blank" rel="noopener noreferrer" class="authorSocialLink_owbf" title="GitHub"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 256 250" preserveAspectRatio="xMidYMid" style="--dark:#000;--light:#fff" class="authorSocialLink_owbf githubSvg_Uu4N"><path d="M128.001 0C57.317 0 0 57.307 0 128.001c0 56.554 36.676 104.535 87.535 121.46 6.397 1.185 8.746-2.777 8.746-6.158 0-3.052-.12-13.135-.174-23.83-35.61 7.742-43.124-15.103-43.124-15.103-5.823-14.795-14.213-18.73-14.213-18.73-11.613-7.944.876-7.78.876-7.78 12.853.902 19.621 13.19 19.621 13.19 11.417 19.568 29.945 13.911 37.249 10.64 1.149-8.272 4.466-13.92 8.127-17.116-28.431-3.236-58.318-14.212-58.318-63.258 0-13.975 5-25.394 13.188-34.358-1.329-3.224-5.71-16.242 1.24-33.874 0 0 10.749-3.44 35.21 13.121 10.21-2.836 21.16-4.258 32.038-4.307 10.878.049 21.837 1.47 32.066 4.307 24.431-16.56 35.165-13.12 35.165-13.12 6.967 17.63 2.584 30.65 1.255 33.873 8.207 8.964 13.173 20.383 13.173 34.358 0 49.163-29.944 59.988-58.447 63.157 4.591 3.972 8.682 11.762 8.682 23.704 0 17.126-.148 30.91-.148 35.126 0 3.407 2.304 7.398 8.792 6.14C219.37 232.5 256 184.537 256 128.002 256 57.307 198.691 0 128.001 0Zm-80.06 182.34c-.282.636-1.283.827-2.194.39-.929-.417-1.45-1.284-1.15-1.922.276-.655 1.279-.838 2.205-.399.93.418 1.46 1.293 1.139 1.931Zm6.296 5.618c-.61.566-1.804.303-2.614-.591-.837-.892-.994-2.086-.375-2.66.63-.566 1.787-.301 2.626.591.838.903 1 2.088.363 2.66Zm4.32 7.188c-.785.545-2.067.034-2.86-1.104-.784-1.138-.784-2.503.017-3.05.795-.547 2.058-.055 2.861 1.075.782 1.157.782 2.522-.019 3.08Zm7.304 8.325c-.701.774-2.196.566-3.29-.49-1.119-1.032-1.43-2.496-.726-3.27.71-.776 2.213-.558 3.315.49 1.11 1.03 1.45 2.505.701 3.27Zm9.442 2.81c-.31 1.003-1.75 1.459-3.199 1.033-1.448-.439-2.395-1.613-2.103-2.626.301-1.01 1.747-1.484 3.207-1.028 1.446.436 2.396 1.602 2.095 2.622Zm10.744 1.193c.036 1.055-1.193 1.93-2.715 1.95-1.53.034-2.769-.82-2.786-1.86 0-1.065 1.202-1.932 2.733-1.958 1.522-.03 2.768.818 2.768 1.868Zm10.555-.405c.182 1.03-.875 2.088-2.387 2.37-1.485.271-2.861-.365-3.05-1.386-.184-1.056.893-2.114 2.376-2.387 1.514-.263 2.868.356 3.061 1.403Z"></path></svg></a></div></div></div></div></div></header><div id="__blog-post-container" class="markdown"><p>이 게시글은 C언어의 <code>malloc</code>에 대해 좀 더 자세하게 알아보기 위해 작성됐다.</p>
+<ul>
+<li>C언어의 기본적인 문법과 프로세스, 가상 메모리, 뮤텍스 같은 개념은 대략적으로 안다고 가정</li>
+<li>이 글에서는 리눅스 glibc 2.41 버전을 기준으로 설명<!-- -->
+<ul>
+<li>운영체제가 다르거나, 다른 libc를 쓰거나, 버전이 다르다면 맞지 않을 수 있음!</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="메모리-할당이란-무엇인가">메모리 할당이란 무엇인가?<a href="#메모리-할당이란-무엇인가" class="hash-link" aria-label="메모리 할당이란 무엇인가?에 대한 직접 링크" title="메모리 할당이란 무엇인가?에 대한 직접 링크">​</a></h2>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="프로세스와-가상-메모리">프로세스와 가상 메모리<a href="#프로세스와-가상-메모리" class="hash-link" aria-label="프로세스와 가상 메모리에 대한 직접 링크" title="프로세스와 가상 메모리에 대한 직접 링크">​</a></h3>
+<div class="theme-admonition theme-admonition-info admonition_xJq3 alert alert--info"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 14 16"><path fill-rule="evenodd" d="M7 2.3c3.14 0 5.7 2.56 5.7 5.7s-2.56 5.7-5.7 5.7A5.71 5.71 0 0 1 1.3 8c0-3.14 2.56-5.7 5.7-5.7zM7 1C3.14 1 0 4.14 0 8s3.14 7 7 7 7-3.14 7-7-3.14-7-7-7zm1 3H6v5h2V4zm0 6H6v2h2v-2z"></path></svg></span>정보</div><div class="admonitionContent_BuS1"><p>프로세스는 가상 메모리를 사용하고, 그 메모리는 페이지 단위로 나뉜다</p></div></div>
+<p>우선 프로세스 관련 내용을 복습해보자.</p>
+<p><img decoding="async" loading="lazy" alt="image.png" src="/blog/assets/images/image-f6f8b158854ecaf909f810b16553383a.png" width="1300" height="955" class="img_ev3q"></p>
+<ul>
+<li>프로세스가 사용할 수 있는 가장 기본적인 자원 중 하나는 <strong>메모리</strong></li>
+<li>가상 메모리는 <strong>페이지</strong>(일반적으로 4킬로바이트) 단위로 나뉨<!-- -->
+<ul>
+<li>페이지는 실제 메모리 <strong>프레임</strong>이나, 디스크 공간에 연결됨</li>
+</ul>
+</li>
+</ul>
+<p><img decoding="async" loading="lazy" alt="image.png" src="/blog/assets/images/image 1-78f60b51c7d289a6b9ed813f7208ab06.png" width="1190" height="841" class="img_ev3q"></p>
+<ul>
+<li>여러 프로세스에 속하는 가상 페이지들이 하나의 메모리 프레임에 연결될 수 있음<!-- -->
+<ul>
+<li>GNU C 라이브러리 코드에 의해 사용되는 가상 메모리가 예시<!-- -->
+<ul>
+<li><code>printf</code> 함수를 포함하는 동일한 실제 메모리 프레임은 프로그램 내에 <code>printf</code> 호출이 있는 각 기존 프로세스의 가상 메모리 페이지에 연결됨</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>일반적으로 <strong>실제 메모리보다 훨씬 많은 가상 메모리</strong>가 존재<!-- -->
+<ul>
+<li>페이지는 프로세스가 접근해야 할 때 실제 메모리로 이동하고 더 이상 필요하지 않을 때 보조 저장 장치로 다시 이동하는 과정을 규칙적으로 거쳐야 함</li>
+<li>이런 이동을 <strong>페이징</strong>이라고 함</li>
+</ul>
+</li>
+<li>프로그램이 현재 실제 메모리에 의해 지원되지 않는 페이지에 접근하려고 시도하면, <strong>페이지 폴트</strong>가 발생<!-- -->
+<ul>
+<li>페이지 폴트가 발생하면 커널은 해당 프로세스를 일시 중단하고, 해당 페이지를 실제 페이지 프레임에 넣은 다음(&quot;페이지 인&quot; 또는 &quot;폴트 인&quot;이라고 함), 프로세스를 다시 시작</li>
+<li>따라서 프로세스 관점에서 보면 해당 페이지는 처음부터 실제 메모리에 있었던 것처럼 보임</li>
+<li>그러나 수 나노초밖에 걸리지 않는 명령의 실행 시간이 갑자기 훨씬 더 길어질 수 있음!<!-- -->
+<ul>
+<li>커널이 페이지 인을 완료하기 위해 I/O를 일반적으로 수행해야 하기 때문</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="메모리-할당의-정의">메모리 할당의 정의<a href="#메모리-할당의-정의" class="hash-link" aria-label="메모리 할당의 정의에 대한 직접 링크" title="메모리 할당의 정의에 대한 직접 링크">​</a></h3>
+<div class="theme-admonition theme-admonition-info admonition_xJq3 alert alert--info"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 14 16"><path fill-rule="evenodd" d="M7 2.3c3.14 0 5.7 2.56 5.7 5.7s-2.56 5.7-5.7 5.7A5.71 5.71 0 0 1 1.3 8c0-3.14 2.56-5.7 5.7-5.7zM7 1C3.14 1 0 4.14 0 8s3.14 7 7 7 7-3.14 7-7-3.14-7-7-7zm1 3H6v5h2V4zm0 6H6v2h2v-2z"></path></svg></span>정보</div><div class="admonitionContent_BuS1"><p>메모리 할당이란, <strong>각 가상 주소 공간 내에서 프로세스가 어떤 주소에 무엇이 있는지 추적하는 과정</strong></p></div></div>
+<p>이해가 잘 안될 수도 있다. 메모리 할당을 생각할 때,</p>
+<ul>
+<li>메모리를 요청하고 받는 과정?</li>
+<li>자원을 분배하는 것?</li>
+</ul>
+<p>이런 정의를 생각했는가? 이는 엄밀히 말해 틀렸다.</p>
+<p><strong>가상 메모리 할당이 항상 실제 물리 메모리 할당으로 즉시 이어지지는 않기 때문이다.</strong></p>
+<p>앞서 말했듯이, 가상 메모리 공간은 일반적으로 실제 메모리 공간보다 훨씬 크다.</p>
+<p>이는, 가상 메모리 할당에 따른 즉각적인 물리 메모리 할당은 불가능할 수 있다는 것을 의미한다.</p>
+<p>가상 메모리 공간의 할당은</p>
+<ul>
+<li>일부는 <strong>즉시</strong> 물리 메모리에 연결될 수 있다</li>
+<li>일부는 <strong>페이지 폴트 발생 시</strong> 물리 메모리에 연결된다</li>
+<li>일부는 <strong>특별한 처리</strong>(예: 모두 0으로 된 페이지)가 발생한다</li>
+</ul>
+<div class="theme-admonition theme-admonition-note admonition_xJq3 alert alert--secondary"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 14 16"><path fill-rule="evenodd" d="M6.3 5.69a.942.942 0 0 1-.28-.7c0-.28.09-.52.28-.7.19-.18.42-.28.7-.28.28 0 .52.09.7.28.18.19.28.42.28.7 0 .28-.09.52-.28.7a1 1 0 0 1-.7.3c-.28 0-.52-.11-.7-.3zM8 7.99c-.02-.25-.11-.48-.31-.69-.2-.19-.42-.3-.69-.31H6c-.27.02-.48.13-.69.31-.2.2-.3.44-.31.69h1v3c.02.27.11.5.31.69.2.2.42.31.69.31h1c.27 0 .48-.11.69-.31.2-.19.3-.42.31-.69H8V7.98v.01zM7 2.3c-3.14 0-5.7 2.54-5.7 5.68 0 3.14 2.56 5.7 5.7 5.7s5.7-2.55 5.7-5.7c0-3.15-2.56-5.69-5.7-5.69v.01zM7 .98c3.86 0 7 3.14 7 7s-3.14 7-7 7-7-3.12-7-7 3.14-7 7-7z"></path></svg></span>노트</div><div class="admonitionContent_BuS1"><p><strong>제로 페이지(zero page) 처리</strong></p><p>모든 값이 0인 페이지는 실제 물리 메모리나 디스크에 연결되지 않을 수 있다.
+대신 &quot;이 페이지는 모두 0이다&quot;라는 식의 <strong>플래그</strong>만 표시된다.</p><p>이는 일종의 메모리 최적화 기법이다.</p><ul>
+<li>모든 프로세스가 공유할 수 있는 읽기 전용 제로 페이지를 유지</li>
+<li>프로세스의 가상 주소 공간에서 요청된 크기의 영역이 할당되지만, 실제 물리 메모리는 아직 할당되지 않음</li>
+<li>프로그램이 실제로 해당 메모리에 접근(특히 쓰기)하기 전까지는 물리 메모리가 할당되지 않음</li>
+<li>처음 읽기 접근 시, 모든 값이 0인 페이지를 가리키게 됨</li>
+<li>쓰기 접근이 발생하면 페이지 폴트가 발생하고, 그제서야 실제 물리 메모리 프레임이 할당되고 0으로 초기화</li>
+</ul><p>이런 방식을 <strong>지연 할당(Lazy Allocation)</strong> 이라고 한다.</p></div></div>
+<p>따라서 프로세스 내에서의 메모리 할당의 주목적은, 물리 자원을 할당하는 것이 아니라,
+동일한 메모리 위치가 서로 다른 데이터에 중복 사용되지 않도록 하는 것</p>
+<ul>
+<li>즉, <strong>메모리 공간의 조직화와 충돌 방지</strong>가 핵심이다.</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="메모리-할당의-방식">메모리 할당의 방식<a href="#메모리-할당의-방식" class="hash-link" aria-label="메모리 할당의 방식에 대한 직접 링크" title="메모리 할당의 방식에 대한 직접 링크">​</a></h2>
+<p>프로세스에서 메모리를 할당하는 방식은 주로 두 가지이다.</p>
+<ul>
+<li><code>exec</code> 방식<!-- -->
+<ul>
+<li>프로세스를 위한 가상 주소 공간을 생성하고, 기본 프로그램을 그 안에 로드하고, 프로그램을 실행하는 작업</li>
+<li>&quot;exec&quot; 함수군(예: <code>execl</code>)에 의해 수행</li>
+<li>프로그램 파일(실행 파일)을 가져와서, 실행 파일의 모든 데이터를 로드할 공간을 할당하고, 그것을 로드한 다음, 제어권을 넘김</li>
+<li>그 데이터는 주로 프로그램의 명령어(<em>텍스트</em>)이지만, 프로그램의 리터럴과 상수, 심지어 일부 변수(정적 저장 클래스의 C 변수)도 포함</li>
+</ul>
+</li>
+<li>프로그래밍 방식<!-- -->
+<ul>
+<li><strong>이 글에서 주로 다룰 내용</strong></li>
+<li>프로그램이 실행되기 시작하면, 추가 메모리를 얻기 위해 사용</li>
+<li>두 가지 종류의 방식이 있음<!-- -->
+<ul>
+<li>자동 할당 (automatic allocation)</li>
+<li>동적 할당 (dynamic allocation)</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p><code>fork</code> 로 메모리를 할당하는 세번째 방식도 있지만, 여기서는 다루지 않겠다.</p>
+<div class="theme-admonition theme-admonition-note admonition_xJq3 alert alert--secondary"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 14 16"><path fill-rule="evenodd" d="M6.3 5.69a.942.942 0 0 1-.28-.7c0-.28.09-.52.28-.7.19-.18.42-.28.7-.28.28 0 .52.09.7.28.18.19.28.42.28.7 0 .28-.09.52-.28.7a1 1 0 0 1-.7.3c-.28 0-.52-.11-.7-.3zM8 7.99c-.02-.25-.11-.48-.31-.69-.2-.19-.42-.3-.69-.31H6c-.27.02-.48.13-.69.31-.2.2-.3.44-.31.69h1v3c.02.27.11.5.31.69.2.2.42.31.69.31h1c.27 0 .48-.11.69-.31.2-.19.3-.42.31-.69H8V7.98v.01zM7 2.3c-3.14 0-5.7 2.54-5.7 5.68 0 3.14 2.56 5.7 5.7 5.7s5.7-2.55 5.7-5.7c0-3.15-2.56-5.69-5.7-5.69v.01zM7 .98c3.86 0 7 3.14 7 7s-3.14 7-7 7-7-3.12-7-7 3.14-7 7-7z"></path></svg></span>노트</div><div class="admonitionContent_BuS1"><p><strong>Memory-mapped I/O</strong></p><p>메모리 맵 I/O는 <strong>동적 가상 메모리 할당의 또 다른 형태</strong>이다.</p><p>메모리를 파일에 매핑한다는 것은 프로세스 주소의 특정 범위의 내용이 지정된 일반 파일의 내용과 동일해야 한다고 선언하는 것을 의미한다.</p><p>이를 통해,</p><ul>
+<li>시스템은 가상 메모리가 초기에 파일의 내용을 포함하도록 만들고</li>
+<li>메모리를 수정하면 시스템은 동일한 수정 사항을 파일에 기록</li>
+<li>가상 메모리와 페이지 폴트 덕분에, 프로그램이 가상 메모리에 접근하기 전까지는 시스템이 파일을 읽기 위한 I/O를 수행하거나 그 내용을 위한 실제 메모리를 할당할 이유가 없음</li>
+</ul></div></div>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="c-프로그램에서의-메모리-할당">C 프로그램에서의 메모리 할당<a href="#c-프로그램에서의-메모리-할당" class="hash-link" aria-label="C 프로그램에서의 메모리 할당에 대한 직접 링크" title="C 프로그램에서의 메모리 할당에 대한 직접 링크">​</a></h2>
+<div class="theme-admonition theme-admonition-info admonition_xJq3 alert alert--info"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 14 16"><path fill-rule="evenodd" d="M7 2.3c3.14 0 5.7 2.56 5.7 5.7s-2.56 5.7-5.7 5.7A5.71 5.71 0 0 1 1.3 8c0-3.14 2.56-5.7 5.7-5.7zM7 1C3.14 1 0 4.14 0 8s3.14 7 7 7 7-3.14 7-7-3.14-7-7-7zm1 3H6v5h2V4zm0 6H6v2h2v-2z"></path></svg></span>정보</div><div class="admonitionContent_BuS1"><p>C언어에서는 변수를 통한 할당은 <strong>정적 할당</strong>과 <strong>자동 할당</strong>을 지원한다.<br>
+<strong>동적 할당</strong>은 라이브러리 함수를 통해 지원한다.</p></div></div>
+<p>C언어에서는 <strong>변수를 통해</strong> 두 가지 종류의 메모리 할당을 지원</p>
+<ul>
+<li>정적 할당(static allocation): 정적 변수나 전역 변수를 선언할 때 발생<!-- -->
+<ul>
+<li>각 정적 변수나 전역 변수는 고정된 크기의 하나의 공간 블록을 정의</li>
+<li>이 공간은 프로그램이 시작될 때(<code>exec</code> 작업의 일부로) 한 번 할당되며, 절대 해제되지 않음</li>
+</ul>
+</li>
+<li>자동 할당(automatic allocation): 함수 인자나 지역 변수와 같은 자동 변수를 선언할 때 발생<!-- -->
+<ul>
+<li>자동 변수를 위한 공간은 선언을 포함하는 복합문이 시작될 때 할당되고,
+그 복합문이 종료될 때 해제</li>
+<li>GNU C에서는 <strong>자동 저장소의 크기가 변하는 표현식일 수 있음</strong>, 다른 C 구현에서는 상수</li>
+</ul>
+</li>
+</ul>
+<p>세 번째는 <strong>동적 할당(dynamic allocation)</strong> 이다.
+이 방식은 C 변수에 의해 지원되지 않지만 GNU C 라이브러리 함수를 통해 사용할 수 있다.</p>
+<div class="theme-admonition theme-admonition-note admonition_xJq3 alert alert--secondary"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 14 16"><path fill-rule="evenodd" d="M6.3 5.69a.942.942 0 0 1-.28-.7c0-.28.09-.52.28-.7.19-.18.42-.28.7-.28.28 0 .52.09.7.28.18.19.28.42.28.7 0 .28-.09.52-.28.7a1 1 0 0 1-.7.3c-.28 0-.52-.11-.7-.3zM8 7.99c-.02-.25-.11-.48-.31-.69-.2-.19-.42-.3-.69-.31H6c-.27.02-.48.13-.69.31-.2.2-.3.44-.31.69h1v3c.02.27.11.5.31.69.2.2.42.31.69.31h1c.27 0 .48-.11.69-.31.2-.19.3-.42.31-.69H8V7.98v.01zM7 2.3c-3.14 0-5.7 2.54-5.7 5.68 0 3.14 2.56 5.7 5.7 5.7s5.7-2.55 5.7-5.7c0-3.15-2.56-5.69-5.7-5.69v.01zM7 .98c3.86 0 7 3.14 7 7s-3.14 7-7 7-7-3.12-7-7 3.14-7 7-7z"></path></svg></span>노트</div><div class="admonitionContent_BuS1"><p><strong>VLA(Variable Length Array, 가변길이 배열)</strong></p><p>앞서 말한 자동 저장소의 크기가 변하는 표현식은 VLA라는 기능으로 구현되었다.</p><div class="language-c codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-c codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token macro property directive-hash" style="color:#36acaa">#</span><span class="token macro property directive keyword" style="color:#00009f">include</span><span class="token macro property string" style="color:#e3116c">&lt;stdio.h&gt;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token keyword" style="color:#00009f">int</span><span class="token plain"> </span><span class="token function" style="color:#d73a49">main</span><span class="token punctuation" style="color:#393A34">(</span><span class="token keyword" style="color:#00009f">void</span><span class="token punctuation" style="color:#393A34">)</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token keyword" style="color:#00009f">int</span><span class="token plain"> n</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token function" style="color:#d73a49">scanf</span><span class="token punctuation" style="color:#393A34">(</span><span class="token string" style="color:#e3116c">&quot;%d&quot;</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"> </span><span class="token operator" style="color:#393A34">&amp;</span><span class="token plain">n</span><span class="token punctuation" style="color:#393A34">)</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token keyword" style="color:#00009f">int</span><span class="token plain"> arr</span><span class="token punctuation" style="color:#393A34">[</span><span class="token plain">n</span><span class="token punctuation" style="color:#393A34">]</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token function" style="color:#d73a49">printf</span><span class="token punctuation" style="color:#393A34">(</span><span class="token string" style="color:#e3116c">&quot;배열의 크기는: %d\n&quot;</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"> </span><span class="token keyword" style="color:#00009f">sizeof</span><span class="token punctuation" style="color:#393A34">(</span><span class="token plain">arr</span><span class="token punctuation" style="color:#393A34">)</span><span class="token operator" style="color:#393A34">/</span><span class="token keyword" style="color:#00009f">sizeof</span><span class="token punctuation" style="color:#393A34">(</span><span class="token plain">arr</span><span class="token punctuation" style="color:#393A34">[</span><span class="token number" style="color:#36acaa">0</span><span class="token punctuation" style="color:#393A34">]</span><span class="token punctuation" style="color:#393A34">)</span><span class="token punctuation" style="color:#393A34">)</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token keyword" style="color:#00009f">return</span><span class="token plain"> </span><span class="token number" style="color:#36acaa">0</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token punctuation" style="color:#393A34">}</span><br></span></code></pre></div></div><p>다음과 같이 GNU C에서는 사용자 입력으로 크기를 받아 배열을 생성하는 코드가 지원된다.</p></div></div>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="동적-할당">동적 할당<a href="#동적-할당" class="hash-link" aria-label="동적 할당에 대한 직접 링크" title="동적 할당에 대한 직접 링크">​</a></h3>
+<p>동적 메모리 할당은 프로그램이 <strong>실행 중에</strong> 정보를 저장할 위치를 결정하는 기술</p>
+<ul>
+<li>필요한 메모리의 양이나 필요한 기간이 프로그램 실행 전에 알려지지 않은 요인에 의존할 때 동적 할당이 필요</li>
+</ul>
+<p>동적 할당은 C 변수에 의해 지원되지 않는다.</p>
+<ul>
+<li>&quot;동적&quot;이라는 저장 클래스는 없음</li>
+<li>동적으로 할당된 공간에 값이 저장되는 C 변수는 결코 있을 수 없음</li>
+<li>동적으로 할당된 메모리를 얻는 유일한 방법은 시스템 콜(일반적으로 GNU C 라이브러리 함수 호출을 통함)</li>
+<li>동적으로 할당된 공간을 참조하는 유일한 방법은 포인터를 통하는 것</li>
+</ul>
+<p>그렇다면 리눅스의 glibc는 <code>malloc</code> 을 어떻게 구현 했는가?</p>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="아이디어">아이디어<a href="#아이디어" class="hash-link" aria-label="아이디어에 대한 직접 링크" title="아이디어에 대한 직접 링크">​</a></h2>
+<p>glibc에서 구현한 <code>malloc</code> 의 주요 아이디어는 다음과 같다.</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="청크">청크<a href="#청크" class="hash-link" aria-label="청크에 대한 직접 링크" title="청크에 대한 직접 링크">​</a></h3>
+<div class="theme-admonition theme-admonition-info admonition_xJq3 alert alert--info"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 14 16"><path fill-rule="evenodd" d="M7 2.3c3.14 0 5.7 2.56 5.7 5.7s-2.56 5.7-5.7 5.7A5.71 5.71 0 0 1 1.3 8c0-3.14 2.56-5.7 5.7-5.7zM7 1C3.14 1 0 4.14 0 8s3.14 7 7 7 7-3.14 7-7-3.14-7-7-7zm1 3H6v5h2V4zm0 6H6v2h2v-2z"></path></svg></span>정보</div><div class="admonitionContent_BuS1"><p><code>malloc</code>은 연속적인 메모리 영역인 <strong>힙</strong>에서 메모리 부분인 <strong>청크</strong>를 할당한다.<br>
+<!-- -->청크엔 <strong>경계 태그</strong>라는 메타 데이터가 있고, 크기 별로 그룹화된 <strong>빈(bin)</strong> 으로 관리된다.</p></div></div>
+<p>메모리 청크는 <strong>청크 앞뒤로 크기 정보 필드</strong>를 가지고 있다. 이를 통해 두 가지 중요한 기능이 가능하다</p>
+<ul>
+<li>두 개의 인접한 미사용 청크를 하나의 더 큰 청크로 <strong>병합</strong> 가능<!-- -->
+<ul>
+<li>이는 사용할 수 없는 작은 청크의 수를 최소화함</li>
+</ul>
+</li>
+<li>모든 청크는 알려진 어떤 청크에서든 시작하여 앞이나 뒤 방향으로 <strong>순회</strong> 가능</li>
+</ul>
+<p><img decoding="async" loading="lazy" alt="image.png" src="/blog/assets/images/image 2-0a45661480809f807fe56e0fb2d21d66.png" width="522" height="388" class="img_ev3q"></p>
+<p><strong>사용 가능한 청크</strong>들은 크기 별로 그룹화된 <strong>빈(bins)에 유지</strong>된다</p>
+<p><img decoding="async" loading="lazy" alt="image.png" src="data:image/png;base64,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" width="493" height="318" class="img_ev3q"></p>
+<p>위의 그림의 경우에는,</p>
+<ul>
+<li>512바이트 미만 크기의 빈들은 각각 정확히 하나의 크기만 보유함<!-- -->
+<ul>
+<li><strong>정렬이 강제</strong>되어 8바이트 간격으로 배치됨</li>
+</ul>
+</li>
+<li>사용 가능한 청크 검색은 가장 작은 것부터 시작하는 최적 맞춤(best-fit) 순서로 처리<!-- -->
+<ul>
+<li>선착순(first-fit)과 같은 다른 접근 방식에 비해 <strong>단편화를 최소화</strong>하는 경향이 있음</li>
+</ul>
+</li>
+</ul>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="아레나">아레나<a href="#아레나" class="hash-link" aria-label="아레나에 대한 직접 링크" title="아레나에 대한 직접 링크">​</a></h3>
+<div class="theme-admonition theme-admonition-info admonition_xJq3 alert alert--info"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 14 16"><path fill-rule="evenodd" d="M7 2.3c3.14 0 5.7 2.56 5.7 5.7s-2.56 5.7-5.7 5.7A5.71 5.71 0 0 1 1.3 8c0-3.14 2.56-5.7 5.7-5.7zM7 1C3.14 1 0 4.14 0 8s3.14 7 7 7 7-3.14 7-7-3.14-7-7-7zm1 3H6v5h2V4zm0 6H6v2h2v-2z"></path></svg></span>정보</div><div class="admonitionContent_BuS1"><p>효율적인 멀티 스레드 프로그램을 위해, 한번에 둘 이상의 힙이 활성화 될 수 있다.<br>
+<!-- -->서로 다른 스레드간 메모리 할당 경합 문제는 <strong>아레나</strong>를 통해 관리된다.</p></div></div>
+<p>다중 스레드 프로그램에서는 <strong>여러 스레드가 동시에 작동</strong></p>
+<ul>
+<li>각 스레드가 메모리를 동시에 할당 가능</li>
+<li><strong>여러 스레드가 동일한 청크</strong>에 접근할 수 있음</li>
+</ul>
+<p>이러한 문제를 막기 위해 <strong>상호 배제</strong>가 필요</p>
+<ul>
+<li>그러나 이는 메모리 할당이 빈번한 멀티 스레드 프로그램에서 <strong>병목현상</strong>을 일으킴</li>
+</ul>
+<p>이를 위해 자체 <strong>뮤텍스로 보호되는 아레나</strong>가 필요</p>
+<ul>
+<li>각 아레나는 대규모 메모리 영역으로, <strong>자체 뮤텍스</strong>로 보호</li>
+<li>스레드가 메모리를 요청하면 사용 가능한(잠금 해제된) 아레나로 할당</li>
+<li>여러 아레나가 있으므로 스레드들이 서로 다른 아레나를 사용할 수 있음</li>
+<li>각 아레나가 독립적인 뮤텍스를 가지므로 <strong>병합이 분산</strong></li>
+</ul>
+<div class="theme-admonition theme-admonition-note admonition_xJq3 alert alert--secondary"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 14 16"><path fill-rule="evenodd" d="M6.3 5.69a.942.942 0 0 1-.28-.7c0-.28.09-.52.28-.7.19-.18.42-.28.7-.28.28 0 .52.09.7.28.18.19.28.42.28.7 0 .28-.09.52-.28.7a1 1 0 0 1-.7.3c-.28 0-.52-.11-.7-.3zM8 7.99c-.02-.25-.11-.48-.31-.69-.2-.19-.42-.3-.69-.31H6c-.27.02-.48.13-.69.31-.2.2-.3.44-.31.69h1v3c.02.27.11.5.31.69.2.2.42.31.69.31h1c.27 0 .48-.11.69-.31.2-.19.3-.42.31-.69H8V7.98v.01zM7 2.3c-3.14 0-5.7 2.54-5.7 5.68 0 3.14 2.56 5.7 5.7 5.7s5.7-2.55 5.7-5.7c0-3.15-2.56-5.69-5.7-5.69v.01zM7 .98c3.86 0 7 3.14 7 7s-3.14 7-7 7-7-3.12-7-7 3.14-7 7-7z"></path></svg></span>노트</div><div class="admonitionContent_BuS1"><p>만일 하나의 힙만 활성화되고, 상호 배제를 위해 단 하나의 뮤텍스만 있다면, 한 스레드가 할당을 위해 이 전역 뮤텍스를 잠근다면 풀때까지 다른 모든 스레드들이 기다려야 할 것이다.</p><p>이는 메모리 할당이 빈번한 멀티 스레드 프로그램에서 상당한 병목현상을 일으킬 것이다.</p><p>따라서 여러 힙을 활성화하고, 아레나를 통해 여러 뮤텍스로 분산하도록 하면, 여러 스레드들이 동시에 메모리를 할당받을 수 있다.</p></div></div>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="gnu-할당자">GNU 할당자<a href="#gnu-할당자" class="hash-link" aria-label="GNU 할당자에 대한 직접 링크" title="GNU 할당자에 대한 직접 링크">​</a></h2>
+<p>이제 glibc가 <strong>실제로 어떤 방식으로 구현했는지</strong> 살펴볼 것이다.</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="malloc의-할당-방식">Malloc의 할당 방식<a href="#malloc의-할당-방식" class="hash-link" aria-label="Malloc의 할당 방식에 대한 직접 링크" title="Malloc의 할당 방식에 대한 직접 링크">​</a></h3>
+<p><code>malloc</code>은 <strong>크기에 따라 할당 방식</strong>이 다르다.</p>
+<ul>
+<li>
+<p><strong>큰 요청(<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>≥</mo></mrow><annotation encoding="application/x-tex">\geq</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7719em;vertical-align:-0.136em"></span><span class="mrel">≥</span></span></span></span> 512 바이트)</strong> 의 경우, 순수한 <strong>최적 맞춤(best-fit)</strong> 할당자</p>
+<ul>
+<li>크기가 같은 청크들에서는 일반적으로 FIFO(가장 최근에 사용되지 않은 것)로 결정</li>
+</ul>
+</li>
+<li>
+<p><strong>작은 요청(<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>≤</mo></mrow><annotation encoding="application/x-tex">\leq</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7719em;vertical-align:-0.136em"></span><span class="mrel">≤</span></span></span></span> 64 바이트, 기본값)</strong> 의 경우, 빠르게 재활용되는 청크의 풀을 유지하는 <strong>캐싱 할당자</strong></p>
+</li>
+<li>
+<p><strong>그 사이의 크기 및 크고 작은 요청의 조합</strong>에 대해서는 두 가지 목표를 동시에 충족하기 위해 최선을 다함</p>
+</li>
+<li>
+<p><strong>매우 큰 요청(<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>≥</mo></mrow><annotation encoding="application/x-tex">\geq</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7719em;vertical-align:-0.136em"></span><span class="mrel">≥</span></span></span></span> 128KB, 기본값)</strong> 의 경우, 지원된다면 <strong>시스템 메모리 매핑 기능</strong>에 의존</p>
+</li>
+<li>
+<p>가장 일반적인 방법은 <strong>힙</strong>(연속적인 메모리 영역)에서 <strong>청크</strong>(메모리 부분)를 할당하고, 관리하는 것</p>
+<ul>
+<li>전통적으로 시스템 힙은 하나의 큰 메모리 영역으로 설정되었지만, GNU C 라이브러리 <code>malloc</code> 구현은 다중 스레드 응용 프로그램에서 사용을 최적화하기 위해 여러 힙을 유지</li>
+<li>이러한 각 영역은 내부적으로 <strong>아레나(arena)</strong> 라고 불림</li>
+<li>여러 아레나의 존재는 여러 스레드가 별도의 아레나에서 동시에 메모리를 할당할 수 있게 하여 성능을 향상시킴</li>
+<li>다른 버전들과 달리, GNU C 라이브러리의 <code>malloc</code>은 큰 크기나 작은 크기 모두 청크 크기를 2의 거듭제곱으로 올림하지 않음</li>
+<li>인접한 청크들은 그 크기에 관계없이 <code>free</code> 시에 병합</li>
+</ul>
+</li>
+<li>
+<p>다른 메모리 할당 방식은 매우 큰 블록, 즉 <strong>페이지보다 훨씬 큰 블록</strong>을 위한 것</p>
+<ul>
+<li>이러한 요청은 <code>mmap</code>(익명 또는 <code>/dev/zero</code>를 통해)으로 할당</li>
+<li>이러한 청크들은 해제될 때 즉시 시스템에 반환</li>
+<li>따라서 큰 청크가 작은 청크들 사이에 &quot;갇히게&quot; 되어 <code>free</code>를 호출한 후에도 메모리를 낭비하는 일이 발생할 수 없음</li>
+</ul>
+</li>
+</ul>
+<div class="theme-admonition theme-admonition-note admonition_xJq3 alert alert--secondary"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 14 16"><path fill-rule="evenodd" d="M6.3 5.69a.942.942 0 0 1-.28-.7c0-.28.09-.52.28-.7.19-.18.42-.28.7-.28.28 0 .52.09.7.28.18.19.28.42.28.7 0 .28-.09.52-.28.7a1 1 0 0 1-.7.3c-.28 0-.52-.11-.7-.3zM8 7.99c-.02-.25-.11-.48-.31-.69-.2-.19-.42-.3-.69-.31H6c-.27.02-.48.13-.69.31-.2.2-.3.44-.31.69h1v3c.02.27.11.5.31.69.2.2.42.31.69.31h1c.27 0 .48-.11.69-.31.2-.19.3-.42.31-.69H8V7.98v.01zM7 2.3c-3.14 0-5.7 2.54-5.7 5.68 0 3.14 2.56 5.7 5.7 5.7s5.7-2.55 5.7-5.7c0-3.15-2.56-5.69-5.7-5.69v.01zM7 .98c3.86 0 7 3.14 7 7s-3.14 7-7 7-7-3.12-7-7 3.14-7 7-7z"></path></svg></span>노트</div><div class="admonitionContent_BuS1"><p>만일 매우 큰 블록도 시스템 메모리 매핑 기능이 아닌 힙에 할당한다면, 다음과 같은 문제점이 발생한다.</p><ol>
+<li>애플리케이션이 <code>free</code> 호출</li>
+<li>매우 큰 청크가 free chunk가 됨</li>
+<li>양 옆에 작은 청크들이 존재한다면, OS에 반환될 수 없음</li>
+<li>매우 큰 영역의 메모리가 애플리케이션에 의해 점유되고, OS가 사용 불가함</li>
+</ol></div></div>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="malloc-internal">Malloc Internal<a href="#malloc-internal" class="hash-link" aria-label="Malloc Internal에 대한 직접 링크" title="Malloc Internal에 대한 직접 링크">​</a></h3>
+<p>glibc의 <code>malloc</code> 은 <strong>힙</strong> 스타일의 <code>malloc</code></p>
+<ul>
+<li>비트맵과 배열을 사용하거나 동일한 크기의 블록 영역을 사용하는 구현과는 다름</li>
+<li>과거에는 애플리케이션당 하나의 힙만 있었지만, glibc의 <code>malloc</code>은 각각 자신의 주소 공간 내에서 성장하는 여러 힙을 허용</li>
+</ul>
+<p>앞으로 사용될 용어들의 정의는 다음과 같다.</p>
+<ul>
+<li><strong>아레나(Arena)</strong>
+<ul>
+<li>하나 이상의 스레드 간에 공유되는 구조</li>
+<li>하나 이상의 힙에 대한 참조와, 해제(free) 상태인 해당 힙 내의 청크들의 연결 리스트를 포함</li>
+<li>각 아레나에 할당된 스레드는 해당 아레나의 free 리스트에서 메모리를 할당받음</li>
+</ul>
+</li>
+<li><strong>힙(Heap)</strong>
+<ul>
+<li>청크로 세분화되어 할당될 수 있는 연속적인 메모리 영역</li>
+<li>각 힙은 정확히 하나의 아레나에 속함</li>
+</ul>
+</li>
+<li><strong>청크(Chunk)</strong>
+<ul>
+<li>할당될 수 있는(애플리케이션 소유) 작은 메모리 범위, 해제될 수 있는(glibc 소유) 범위, 또는 인접한 청크들과 결합하여 더 큰 범위를 형성할 수 있는 범위</li>
+<li>청크는 애플리케이션에 제공되는 메모리 블록을 감싸고 있음</li>
+<li>각 청크는 하나의 힙에 존재하며 하나의 아레나에 속함</li>
+</ul>
+</li>
+<li><strong>메모리(Memory)</strong>
+<ul>
+<li>일반적으로 RAM이나 스왑에 의해 지원되는 애플리케이션 주소 공간의 일부</li>
+</ul>
+</li>
+</ul>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="청크-1">청크<a href="#청크-1" class="hash-link" aria-label="청크에 대한 직접 링크" title="청크에 대한 직접 링크">​</a></h3>
+<p>Glibc의 <code>malloc</code>은 <strong>청크 지향적</strong></p>
+<ul>
+<li>큰 메모리 영역(힙)을 다양한 크기의 청크로 나눔</li>
+<li>각 청크는 자신의 크기(청크 헤더의 <code>size</code> 필드를 통해)에 대한 메타데이터를 포함하며, 이를 통해 인접한 청크들의 위치를 알 수 있음</li>
+<li>청크가 애플리케이션에 의해 사용 중일 때는 청크의 크기만 기억됨</li>
+<li>청크가 해제(free)되면, 이전에 애플리케이션 데이터로 사용되던 메모리는 연결 리스트 내의 포인터와 같은 추가적인 아레나 관련 정보를 위해 <strong>재사용</strong></li>
+<li>이를 통해 필요할 때 적합한 청크를 빠르게 찾아 재사용 가능</li>
+<li>해제된 청크의 마지막 워드에는 청크 크기의 복사본이 포함
+(3개의 LSB가 0으로 설정됨, 청크 앞부분의 size의 3개 LSB는 플래그로 사용됨)</li>
+</ul>
+<div class="theme-admonition theme-admonition-info admonition_xJq3 alert alert--info"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 14 16"><path fill-rule="evenodd" d="M7 2.3c3.14 0 5.7 2.56 5.7 5.7s-2.56 5.7-5.7 5.7A5.71 5.71 0 0 1 1.3 8c0-3.14 2.56-5.7 5.7-5.7zM7 1C3.14 1 0 4.14 0 8s3.14 7 7 7 7-3.14 7-7-3.14-7-7-7zm1 3H6v5h2V4zm0 6H6v2h2v-2z"></path></svg></span>정보</div><div class="admonitionContent_BuS1"><p>청크는 항상 짝수 워드 경계에서 시작한다. 따라서 <code>mem</code> 부분 또한 짝수 워드 경계에 위치하게 되며, 이는 적어도 double-word 정렬이 됨을 의미한다.</p><p>최소 double-word 정렬이 강제되는 이유는, <code>long double</code>이나 SIMD 벡터가 단일 워드를 넘어서는 데이터 단위를 처리하기 때문이라고 한다.
+만일 이러한 보장이 없을 경우, 프로그램이 즉시 충돌할 수 있다.</p></div></div>
+<p>청크의 실제 구조는 다음과 같다. 메모리에서 청크들은 서로 인접해있다.</p>
+<ul>
+<li>할당된 청크</li>
+</ul>
+<div class="language-text codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-text codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">    chunk-&gt; +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">	    |             Size of previous chunk, if unallocated (P clear)  |</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">	    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">	    |             Size of chunk, in bytes                     |A|M|P|</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      mem-&gt; +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">	    |             User data starts here...                          .</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">	    .                                                               .</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">	    .             (malloc_usable_size() bytes)                      .</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">	    .                                                               |</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">nextchunk-&gt; +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">	    |             (size of chunk, but used for application data)    |</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">	    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">	    |             Size of next chunk, in bytes                |A|0|1|</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">	    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br></span></code></pre></div></div>
+<ul>
+<li>free chunk</li>
+</ul>
+<div class="language-text codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-text codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">    chunk-&gt; +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">	    |             Size of previous chunk, if unallocated (P clear)  |</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">	    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    `head:&#x27; |             Size of chunk, in bytes                     |A|0|P|</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      mem-&gt; +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">	    |             Forward pointer to next chunk in list             |</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">	    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">	    |             Back pointer to previous chunk in list            |</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">	    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">	    |             Unused space (may be 0 bytes long)                .</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">	    .                                                               .</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">	    .                                                               |</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">nextchunk-&gt; +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    `foot:&#x27; |             Size of chunk, in bytes                           |</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">	    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">	    |             Size of next chunk, in bytes                |A|0|0|</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">	    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br></span></code></pre></div></div>
+<p>각 구성요소의 의미는</p>
+<ul>
+<li><strong>chunk</strong>: 청크의 시작부분</li>
+<li><strong>nextchunk</strong>: 다음 청크의 시작부분</li>
+<li><strong>mem</strong>: <code>malloc</code> 호출시 사용자에게 반환되는 포인터</li>
+<li><strong>AMP 플래그</strong>
+<ul>
+<li>청크 크기의 3 LSB를 플래그로 사용한다.</li>
+<li>세가지 플레그의 정의<!-- -->
+<ul>
+<li><strong>A (0x04)</strong>: 할당된 아레나 (NON_MAIN_ARENA)<!-- -->
+<ul>
+<li>0 - 청크는 메인 아레나와 메인 힙에서 온 것</li>
+<li>1 - 청크는 <code>mmap</code>된 메모리에서 온 것<!-- -->
+<ul>
+<li>힙의 위치는 청크의 주소로부터 계산할 수 있음</li>
+</ul>
+</li>
+<li>메인 아레나는 애플리케이션의 힙을 사용하고 다른 아레나는 <code>mmap</code>된 힙을 사용하므로,
+청크를 힙에 매핑하려면 어떤 경우가 적용되는지 알아야 함</li>
+</ul>
+</li>
+<li><strong>M (0x02)</strong>: 단일 mmap 호출로 할당 여부 (IS_MMAPPED)<!-- -->
+<ul>
+<li>설정되었다면 이 청크는 단일 mmap 호출로 할당되었으며 힙의 일부가 아님</li>
+</ul>
+</li>
+<li><strong>P (0x01)</strong>: 이전 청크가 사용 중 (PREV_INUSE)<!-- -->
+<ul>
+<li>설정되었다면 이전 청크가 애플리케이션에 의해 사용 중이므로 <code>prev_size</code> 필드는 유효하지 않음</li>
+<li>일부 청크는 애플리케이션에 의해 free되었음에도 이 비트가 설정될 수 있음<!-- -->
+<ul>
+<li>이전 청크가 병합 후보로 고려되어서는 안 된다는 것을 의미</li>
+<li>애플리케이션이나 <code>malloc</code>의 원래 코드 위에 레이어된 다른 최적화에 의해 사용 중</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>free chunk의 구조에 나오는 <code>head</code>와 <code>foot</code> 덕분에, 현재 청크의 바로 위 청크든 바로 아래 청크이든 O(1) 속도로 점프 할 수 있고, 이는 병합을 매우 빠르게 할 수 있게 만든다.</p>
+<p>앞선 내용에 예외 사항들이 있다.</p>
+<ul>
+<li>top 청크<!-- -->
+<ul>
+<li>힙 또는 아레나의 가장 높은 주소에 위치한 미할당된 메모리 영역</li>
+<li>자신을 기준으로 오프셋을 계산할 다음 연속 청크가 없기 때문에 trailing size field를 사용하지 않음</li>
+<li>초기화 이후에는 항상 존재하도록 강제됨</li>
+</ul>
+</li>
+<li>fastbin에 있는 청크<!-- -->
+<ul>
+<li>chunk allocator의 관점에서 할당된 청크로 취급됨</li>
+<li>내부적으로 <code>malloc_consolidate</code> 함수 내에서만 이웃 청크들과 대량으로 병합됨</li>
+<li>fastbin이 정확히 무엇인지는 다룰 것임</li>
+</ul>
+</li>
+</ul>
+<div class="theme-admonition theme-admonition-note admonition_xJq3 alert alert--secondary"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 14 16"><path fill-rule="evenodd" d="M6.3 5.69a.942.942 0 0 1-.28-.7c0-.28.09-.52.28-.7.19-.18.42-.28.7-.28.28 0 .52.09.7.28.18.19.28.42.28.7 0 .28-.09.52-.28.7a1 1 0 0 1-.7.3c-.28 0-.52-.11-.7-.3zM8 7.99c-.02-.25-.11-.48-.31-.69-.2-.19-.42-.3-.69-.31H6c-.27.02-.48.13-.69.31-.2.2-.3.44-.31.69h1v3c.02.27.11.5.31.69.2.2.42.31.69.31h1c.27 0 .48-.11.69-.31.2-.19.3-.42.31-.69H8V7.98v.01zM7 2.3c-3.14 0-5.7 2.54-5.7 5.68 0 3.14 2.56 5.7 5.7 5.7s5.7-2.55 5.7-5.7c0-3.15-2.56-5.69-5.7-5.69v.01zM7 .98c3.86 0 7 3.14 7 7s-3.14 7-7 7-7-3.12-7-7 3.14-7 7-7z"></path></svg></span>노트</div><div class="admonitionContent_BuS1"><p>앞선 내용들을 다음과 같은 C언어 함수로 실제 청크의 크기와 AMP 플래그를 확인해 볼 수 있다.</p><div class="language-c codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-c codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic">// malloc의 반환값(mem)을 인자로 넘김</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token keyword" style="color:#00009f">void</span><span class="token plain"> </span><span class="token function" style="color:#d73a49">print</span><span class="token punctuation" style="color:#393A34">(</span><span class="token class-name">size_t</span><span class="token plain"> </span><span class="token operator" style="color:#393A34">*</span><span class="token plain">mem</span><span class="token punctuation" style="color:#393A34">)</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token class-name">size_t</span><span class="token plain"> head </span><span class="token operator" style="color:#393A34">=</span><span class="token plain"> </span><span class="token operator" style="color:#393A34">*</span><span class="token punctuation" style="color:#393A34">(</span><span class="token plain">mem </span><span class="token operator" style="color:#393A34">-</span><span class="token plain"> </span><span class="token number" style="color:#36acaa">1</span><span class="token punctuation" style="color:#393A34">)</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token function" style="color:#d73a49">printf</span><span class="token punctuation" style="color:#393A34">(</span><span class="token string" style="color:#e3116c">&quot;A:%d M:%d P:%d chunk size:%zu\n&quot;</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token operator" style="color:#393A34">!</span><span class="token operator" style="color:#393A34">!</span><span class="token punctuation" style="color:#393A34">(</span><span class="token plain">head </span><span class="token operator" style="color:#393A34">&amp;</span><span class="token plain"> </span><span class="token number" style="color:#36acaa">0x4</span><span class="token punctuation" style="color:#393A34">)</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token operator" style="color:#393A34">!</span><span class="token operator" style="color:#393A34">!</span><span class="token punctuation" style="color:#393A34">(</span><span class="token plain">head </span><span class="token operator" style="color:#393A34">&amp;</span><span class="token plain"> </span><span class="token number" style="color:#36acaa">0x2</span><span class="token punctuation" style="color:#393A34">)</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      </span><span class="token operator" style="color:#393A34">!</span><span class="token operator" style="color:#393A34">!</span><span class="token punctuation" style="color:#393A34">(</span><span class="token plain">head </span><span class="token operator" style="color:#393A34">&amp;</span><span class="token plain"> </span><span class="token number" style="color:#36acaa">0x1</span><span class="token punctuation" style="color:#393A34">)</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      head </span><span class="token operator" style="color:#393A34">&amp;</span><span class="token plain"> </span><span class="token operator" style="color:#393A34">~</span><span class="token number" style="color:#36acaa">0x7</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token punctuation" style="color:#393A34">)</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token punctuation" style="color:#393A34">}</span><br></span></code></pre></div></div><p>이 코드를 x86_64 리눅스 머신으로 실행해서 다음과 같은 내용을 확인 할 수 있었다.</p><ul>
+<li>청크 크기가 16바이트 단위로 정렬된다.</li>
+<li>청크 크기가 128KB를 넘어가면 M 플래그가 1이 된다.<!-- -->
+<ul>
+<li><code>mmap</code>을 통해 힙 외부의 공간에서 할당된 것</li>
+</ul>
+</li>
+<li><code>malloc</code>으로 1032 바이트 이하의 메모리 할당을 요청하면 <code>free</code>를 해도 다음 청크의 P 플래그가 0이 되지 않는다.<!-- -->
+<ul>
+<li>이는 tcache 때문, 아래에서 다룰 것이다.</li>
+</ul>
+</li>
+</ul></div></div>
+<p>glibc에서의 청크 소스 코드는 다음과 같다.</p>
+<div class="language-c codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-c codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token keyword" style="color:#00009f">struct</span><span class="token plain"> </span><span class="token class-name">malloc_chunk</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  INTERNAL_SIZE_T      mchunk_prev_size</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain">  </span><span class="token comment" style="color:#999988;font-style:italic">/* Size of previous chunk (if free).  */</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  INTERNAL_SIZE_T      mchunk_size</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain">       </span><span class="token comment" style="color:#999988;font-style:italic">/* Size in bytes, including overhead. */</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token keyword" style="color:#00009f">struct</span><span class="token plain"> </span><span class="token class-name">malloc_chunk</span><span class="token operator" style="color:#393A34">*</span><span class="token plain"> fd</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain">         </span><span class="token comment" style="color:#999988;font-style:italic">/* double links -- used only if free. */</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token keyword" style="color:#00009f">struct</span><span class="token plain"> </span><span class="token class-name">malloc_chunk</span><span class="token operator" style="color:#393A34">*</span><span class="token plain"> bk</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token comment" style="color:#999988;font-style:italic">/* Only used for large blocks: pointer to next larger size.  */</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token keyword" style="color:#00009f">struct</span><span class="token plain"> </span><span class="token class-name">malloc_chunk</span><span class="token operator" style="color:#393A34">*</span><span class="token plain"> fd_nextsize</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain"> </span><span class="token comment" style="color:#999988;font-style:italic">/* double links -- used only if free. */</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token keyword" style="color:#00009f">struct</span><span class="token plain"> </span><span class="token class-name">malloc_chunk</span><span class="token operator" style="color:#393A34">*</span><span class="token plain"> bk_nextsize</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token punctuation" style="color:#393A34">}</span><span class="token punctuation" style="color:#393A34">;</span><br></span></code></pre></div></div>
+<p><code>fd</code>, <code>bk</code>, <code>fd_nextsize</code>, <code>bk_nextsize</code> 포인터들은 <strong>빈(bin)</strong> 구현에 사용된다.</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="아레나와-힙">아레나와 힙<a href="#아레나와-힙" class="hash-link" aria-label="아레나와 힙에 대한 직접 링크" title="아레나와 힙에 대한 직접 링크">​</a></h3>
+<ul>
+<li><strong>기본 구조</strong>
+<ul>
+<li>각 아레나는 하나 이상의 힙을 관리</li>
+<li>아레나 구조체에는 메모리 관리에 필요한 메타데이터가 포함</li>
+<li>각 아레나는 다음 아레나를 가리키는 포인터를 가지며, 연결 리스트 형태로 구성</li>
+</ul>
+</li>
+<li><strong>동기화 메커니즘</strong>:<!-- -->
+<ul>
+<li>각 아레나에는 접근을 제어하기 위한 뮤텍스(mutex)가 포함</li>
+<li>이 뮤텍스는 메모리 할당/해제 작업 시 아레나의 데이터 구조를 보호</li>
+</ul>
+</li>
+<li><strong>메모리 관리 구성 요소</strong>:<!-- -->
+<ul>
+<li>&quot;top&quot; 청크: 각 아레나가 추적하는 특별한 청크로, 일반적으로 가장 큰 사용 가능한 청크</li>
+<li>빈(bins): 사용 가능한 청크를 관리하는 다양한 리스트 (fastbin, unsorted bin, small bin, large bin)</li>
+<li>힙 목록: 아레나가 관리하는 하나 이상의 힙을 추적하는 구조</li>
+</ul>
+</li>
+</ul>
+<p>할당된 아레나를 위한 메모리는 해당 아레나의 초기 힙에서 가져온다.</p>
+<p><img decoding="async" loading="lazy" alt="image.png" src="/blog/assets/images/image-6-b3b6a0c17335c04b2bd33834c9b5a021.png" width="1037" height="337" class="img_ev3q"></p>
+<p>이 그림의 경우, 각 힙의 구성 요소는</p>
+<ul>
+<li><strong><code>heap_info</code> 구조체</strong>
+<ul>
+<li><code>ar_ptr</code>: 이 힙이 속한 아레나를 가리키는 포인터</li>
+<li><code>prev</code>: 이전 힙을 가리키는 포인터</li>
+<li><code>size</code>: 힙의 크기 정보</li>
+<li>기타 메타데이터(그림에서 <code>...</code>로 표시)</li>
+</ul>
+</li>
+<li><strong>아레나 영역</strong>
+<ul>
+<li>Heap #1에만 실제 <code>arena</code> 구조체가 포함(노란색으로 표시)</li>
+<li>이 아레나는 세가지 힙의 메모리 할당을 관리</li>
+</ul>
+</li>
+<li><strong>청크 영역</strong>
+<ul>
+<li>각 힙은 실제 메모리 청크들을 저장하는 영역을 가짐</li>
+<li>이 청크들은 사용자 프로그램에 할당되거나 사용 가능한 상태로 관리</li>
+</ul>
+</li>
+<li><strong>&quot;top&quot; 청크</strong>
+<ul>
+<li>Heap #3의 끝부분에 &quot;top&quot; 청크가 존재</li>
+<li>이는 아레나의 현재 가용 메모리의 끝을 나타내는 특별한 청크</li>
+<li>추가 메모리가 필요할 때 이 청크가 확장되거나, 새로운 힙이 할당</li>
+</ul>
+</li>
+</ul>
+<div class="theme-admonition theme-admonition-info admonition_xJq3 alert alert--info"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 14 16"><path fill-rule="evenodd" d="M7 2.3c3.14 0 5.7 2.56 5.7 5.7s-2.56 5.7-5.7 5.7A5.71 5.71 0 0 1 1.3 8c0-3.14 2.56-5.7 5.7-5.7zM7 1C3.14 1 0 4.14 0 8s3.14 7 7 7 7-3.14 7-7-3.14-7-7-7zm1 3H6v5h2V4zm0 6H6v2h2v-2z"></path></svg></span>정보</div><div class="admonitionContent_BuS1"><p>top 청크의 확장은 <code>sbrk</code> 시스템 콜을 통해 구현된다.</p><p>이 시스템 콜을 통해 데이터 세그먼트의 영역을 확장하고, 논리적으로는 늘어난 만큼의 공간이 기존 Top Chunk 뒤에 붙게 된다.</p></div></div>
+<div class="theme-admonition theme-admonition-note admonition_xJq3 alert alert--secondary"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 14 16"><path fill-rule="evenodd" d="M6.3 5.69a.942.942 0 0 1-.28-.7c0-.28.09-.52.28-.7.19-.18.42-.28.7-.28.28 0 .52.09.7.28.18.19.28.42.28.7 0 .28-.09.52-.28.7a1 1 0 0 1-.7.3c-.28 0-.52-.11-.7-.3zM8 7.99c-.02-.25-.11-.48-.31-.69-.2-.19-.42-.3-.69-.31H6c-.27.02-.48.13-.69.31-.2.2-.3.44-.31.69h1v3c.02.27.11.5.31.69.2.2.42.31.69.31h1c.27 0 .48-.11.69-.31.2-.19.3-.42.31-.69H8V7.98v.01zM7 2.3c-3.14 0-5.7 2.54-5.7 5.68 0 3.14 2.56 5.7 5.7 5.7s5.7-2.55 5.7-5.7c0-3.15-2.56-5.69-5.7-5.69v.01zM7 .98c3.86 0 7 3.14 7 7s-3.14 7-7 7-7-3.12-7-7 3.14-7 7-7z"></path></svg></span>노트</div><div class="admonitionContent_BuS1"><p>glibc 소스코드의 <code>heap_info</code> 구조체 코드는 다음과 같다.</p><div class="language-c codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-c codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic">/* A heap is a single contiguous memory region holding (coalesceable)</span><br></span><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic">   malloc_chunks.  It is allocated with mmap() and always starts at an</span><br></span><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic">   address aligned to HEAP_MAX_SIZE.  */</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token keyword" style="color:#00009f">typedef</span><span class="token plain"> </span><span class="token keyword" style="color:#00009f">struct</span><span class="token plain"> </span><span class="token class-name">_heap_info</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  mstate ar_ptr</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain"> </span><span class="token comment" style="color:#999988;font-style:italic">/* Arena for this heap. */</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token keyword" style="color:#00009f">struct</span><span class="token plain"> </span><span class="token class-name">_heap_info</span><span class="token plain"> </span><span class="token operator" style="color:#393A34">*</span><span class="token plain">prev</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain"> </span><span class="token comment" style="color:#999988;font-style:italic">/* Previous heap. */</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token class-name">size_t</span><span class="token plain"> size</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain">   </span><span class="token comment" style="color:#999988;font-style:italic">/* Current size in bytes. */</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token class-name">size_t</span><span class="token plain"> mprotect_size</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain"> </span><span class="token comment" style="color:#999988;font-style:italic">/* Size in bytes that has been mprotected</span><br></span><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic">                           PROT_READ|PROT_WRITE.  */</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token class-name">size_t</span><span class="token plain"> pagesize</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain"> </span><span class="token comment" style="color:#999988;font-style:italic">/* Page size used when allocating the arena.  */</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token comment" style="color:#999988;font-style:italic">/* Make sure the following data is properly aligned, particularly</span><br></span><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic">     that sizeof (heap_info) + 2 * SIZE_SZ is a multiple of</span><br></span><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic">     MALLOC_ALIGNMENT. */</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token keyword" style="color:#00009f">char</span><span class="token plain"> pad</span><span class="token punctuation" style="color:#393A34">[</span><span class="token operator" style="color:#393A34">-</span><span class="token number" style="color:#36acaa">3</span><span class="token plain"> </span><span class="token operator" style="color:#393A34">*</span><span class="token plain"> SIZE_SZ </span><span class="token operator" style="color:#393A34">&amp;</span><span class="token plain"> MALLOC_ALIGN_MASK</span><span class="token punctuation" style="color:#393A34">]</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token punctuation" style="color:#393A34">}</span><span class="token plain"> heap_info</span><span class="token punctuation" style="color:#393A34">;</span><br></span></code></pre></div></div></div></div>
+<p>이제 <strong>아레나 내부</strong>를 살펴보자.</p>
+<p><img decoding="async" loading="lazy" alt="image.png" src="/blog/assets/images/image 7-65dd1ecb0def8659f3bc56fbea6dd33a.png" width="965" height="406" class="img_ev3q"></p>
+<p>그림에서 보다시피 다음 아레나를 가리키는 포인터를 가진다 - 연결 리스트 형태</p>
+<p>각 아레나 내에서 청크는, 애플리케이션에 의해 사용 중이거나 사용 가능한(free) 상태</p>
+<ul>
+<li>사용 중인 청크는 아레나에서 추적되지 않음</li>
+<li>사용 가능한 청크는 크기와 이력에 따라 다양한 목록에 저장<!-- -->
+<ul>
+<li>이러한 목록이 <strong>빈</strong> - 라이브러리가 할당 요청을 충족하기 위해 적합한 청크를 빠르게 검색 가능</li>
+</ul>
+</li>
+</ul>
+<p>bins는 해제된 free chunk들을 관리하기 위한 빈 헤더의 배열</p>
+<ul>
+<li>각 빈은 이중 연결 리스트로 되있음</li>
+<li>빈들은 대략적인 logarithmic 간격으로 나뉘어져 있음</li>
+<li>빈의 총 개수는 128개</li>
+</ul>
+<div class="theme-admonition theme-admonition-note admonition_xJq3 alert alert--secondary"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 14 16"><path fill-rule="evenodd" d="M6.3 5.69a.942.942 0 0 1-.28-.7c0-.28.09-.52.28-.7.19-.18.42-.28.7-.28.28 0 .52.09.7.28.18.19.28.42.28.7 0 .28-.09.52-.28.7a1 1 0 0 1-.7.3c-.28 0-.52-.11-.7-.3zM8 7.99c-.02-.25-.11-.48-.31-.69-.2-.19-.42-.3-.69-.31H6c-.27.02-.48.13-.69.31-.2.2-.3.44-.31.69h1v3c.02.27.11.5.31.69.2.2.42.31.69.31h1c.27 0 .48-.11.69-.31.2-.19.3-.42.31-.69H8V7.98v.01zM7 2.3c-3.14 0-5.7 2.54-5.7 5.68 0 3.14 2.56 5.7 5.7 5.7s5.7-2.55 5.7-5.7c0-3.15-2.56-5.69-5.7-5.69v.01zM7 .98c3.86 0 7 3.14 7 7s-3.14 7-7 7-7-3.12-7-7 3.14-7 7-7z"></path></svg></span>노트</div><div class="admonitionContent_BuS1"><p>빈의 목적은 결국 사용 가능한(free) 청크를 <strong>파편화를 방지</strong>하면서 <strong>빠르게</strong> 검색할 수 있도록 분류하는 것</p><p>빈 없이 만일 모든 free chunk를 정렬하고, 검색하려면 매우 오랜 시간이 걸릴 것이다.<br>
+<!-- -->따라서 우선 128개의 빈을 검색하고, 검색한 빈에서 다시 free chunk를 찾는 두 단계를 거친다.</p></div></div>
+<p>추가적인 효율성을 위해, 빈도 4가지로 나뉜다.</p>
+<p>작은 청크들은 <strong>Fast</strong> 빈에 저장되고, 크기가 고정되며 정렬 및 순회를 하지도 않는다.</p>
+<ul>
+<li>접근 속도를 빠르게 유지하기 위해 로직을 최소화</li>
+<li>인접한 청크와 병합되지 않음</li>
+<li>모두 같은 크기이므로 리스트의 중간에 있는 청크에 접근할 필요가 없음<!-- -->
+<ul>
+<li>singly-linked lists로 저장</li>
+</ul>
+</li>
+</ul>
+<p>청크가 분할되고 남은 조각들이나 <code>free</code>로 반환된 모든 청크들은, 우선 <strong>Unsorted</strong> 빈에 배치</p>
+<ul>
+<li>청크들에게 (정렬되기 전에) 빠르게 재사용될 수 있는 한 번의 기회 - 할당 지역성!</li>
+<li><code>free</code> 함수가 정렬할 필요가 없으므로 효율성이 높아짐</li>
+</ul>
+<p><strong>Unsorted</strong> 빈에서 재사용될 기회를 놓친 청크는 일반빈 - <strong>Small</strong> 혹은 <strong>Large</strong> 빈으로 이동</p>
+<ul>
+<li>청크가 이동하기 전에 먼저 인접한 free 청크와 결합됨</li>
+<li>doubly-linked lists로 되어있어 리스트의 중간에서도 청크를 제거할 수 있음</li>
+<li><strong>Small</strong> 빈은 각 청크가 모두 같은 크기</li>
+<li><strong>Large</strong> 빈은 크기가 서로 다를 수 있음<!-- -->
+<ul>
+<li>best-fit 청크 검색이 필요하며, 청크가 요청한 크기와 나머지로 쪼개질 수도 있음</li>
+</ul>
+</li>
+</ul>
+<p>표로 정리하면 다음과 같다.</p>
+<table><thead><tr><th>빈 종류</th><th>대상</th><th>핵심 전략</th></tr></thead><tbody><tr><td><strong>Fast Bins</strong></td><td>아주 작음</td><td>속도 최우선 (병합 X)</td></tr><tr><td><strong>Unsorted Bin</strong></td><td>대부분의 청크</td><td>빠른 재사용 + 정렬 보류</td></tr><tr><td><strong>Small Bins</strong></td><td>작음 (고정 크기)</td><td>파편화 방지 (병합 O)</td></tr><tr><td><strong>Large Bins</strong></td><td>큼 (크기 범위)</td><td>최적 맞춤 (검색 + 분할)</td></tr></tbody></table>
+<p>큰 청크를 위한 최적 맞춤을 찾아야 하기 때문에, 큰 청크들은 리스트 내 각 크기의 첫 번째 청크를 연결하는 추가적인 이중 연결 리스트를 가지고 있다. 그리고 청크들은 크기별로 가장 큰 것부터 가장 작은 것까지 정렬</p>
+<p>이를 통해 <code>malloc</code>은 충분히 큰 첫 번째 청크를 빠르게 스캔 가능</p>
+<p><img decoding="async" loading="lazy" alt="image.png" src="/blog/assets/images/image 8-4effe7a110d81c198e400a6c5b3b80e4.png" width="965" height="197" class="img_ev3q"></p>
+<div class="theme-admonition theme-admonition-note admonition_xJq3 alert alert--secondary"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 14 16"><path fill-rule="evenodd" d="M6.3 5.69a.942.942 0 0 1-.28-.7c0-.28.09-.52.28-.7.19-.18.42-.28.7-.28.28 0 .52.09.7.28.18.19.28.42.28.7 0 .28-.09.52-.28.7a1 1 0 0 1-.7.3c-.28 0-.52-.11-.7-.3zM8 7.99c-.02-.25-.11-.48-.31-.69-.2-.19-.42-.3-.69-.31H6c-.27.02-.48.13-.69.31-.2.2-.3.44-.31.69h1v3c.02.27.11.5.31.69.2.2.42.31.69.31h1c.27 0 .48-.11.69-.31.2-.19.3-.42.31-.69H8V7.98v.01zM7 2.3c-3.14 0-5.7 2.54-5.7 5.68 0 3.14 2.56 5.7 5.7 5.7s5.7-2.55 5.7-5.7c0-3.15-2.56-5.69-5.7-5.69v.01zM7 .98c3.86 0 7 3.14 7 7s-3.14 7-7 7-7-3.12-7-7 3.14-7 7-7z"></path></svg></span>노트</div><div class="admonitionContent_BuS1"><p>glibc에서의 아레나 소스코드는 다음과 같다.</p><div class="language-c codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-c codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token keyword" style="color:#00009f">struct</span><span class="token plain"> </span><span class="token class-name">malloc_state</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token comment" style="color:#999988;font-style:italic">/* Serialize access.  */</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token function" style="color:#d73a49">__libc_lock_define</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">(</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"> mutex</span><span class="token punctuation" style="color:#393A34">)</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token comment" style="color:#999988;font-style:italic">/* Flags (formerly in max_fast).  */</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token keyword" style="color:#00009f">int</span><span class="token plain"> flags</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token comment" style="color:#999988;font-style:italic">/* Set if the fastbin chunks contain recently inserted free blocks.  */</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token comment" style="color:#999988;font-style:italic">/* Note this is a bool but not all targets support atomics on booleans.  */</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token keyword" style="color:#00009f">int</span><span class="token plain"> have_fastchunks</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token comment" style="color:#999988;font-style:italic">/* Fastbins */</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  mfastbinptr fastbinsY</span><span class="token punctuation" style="color:#393A34">[</span><span class="token plain">NFASTBINS</span><span class="token punctuation" style="color:#393A34">]</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token comment" style="color:#999988;font-style:italic">/* Base of the topmost chunk -- not otherwise kept in a bin */</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  mchunkptr top</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token comment" style="color:#999988;font-style:italic">/* The remainder from the most recent split of a small request */</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  mchunkptr last_remainder</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token comment" style="color:#999988;font-style:italic">/* Normal bins packed as described above */</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  mchunkptr bins</span><span class="token punctuation" style="color:#393A34">[</span><span class="token plain">NBINS </span><span class="token operator" style="color:#393A34">*</span><span class="token plain"> </span><span class="token number" style="color:#36acaa">2</span><span class="token plain"> </span><span class="token operator" style="color:#393A34">-</span><span class="token plain"> </span><span class="token number" style="color:#36acaa">2</span><span class="token punctuation" style="color:#393A34">]</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token comment" style="color:#999988;font-style:italic">/* Bitmap of bins */</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token keyword" style="color:#00009f">unsigned</span><span class="token plain"> </span><span class="token keyword" style="color:#00009f">int</span><span class="token plain"> binmap</span><span class="token punctuation" style="color:#393A34">[</span><span class="token plain">BINMAPSIZE</span><span class="token punctuation" style="color:#393A34">]</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token comment" style="color:#999988;font-style:italic">/* Linked list */</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token keyword" style="color:#00009f">struct</span><span class="token plain"> </span><span class="token class-name">malloc_state</span><span class="token plain"> </span><span class="token operator" style="color:#393A34">*</span><span class="token plain">next</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token comment" style="color:#999988;font-style:italic">/* Linked list for free arenas.  Access to this field is serialized</span><br></span><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic">     by free_list_lock in arena.c.  */</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token keyword" style="color:#00009f">struct</span><span class="token plain"> </span><span class="token class-name">malloc_state</span><span class="token plain"> </span><span class="token operator" style="color:#393A34">*</span><span class="token plain">next_free</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token comment" style="color:#999988;font-style:italic">/* Number of threads attached to this arena.  0 if the arena is on</span><br></span><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic">     the free list.  Access to this field is serialized by</span><br></span><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic">     free_list_lock in arena.c.  */</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  INTERNAL_SIZE_T attached_threads</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token comment" style="color:#999988;font-style:italic">/* Memory allocated from the system in this arena.  */</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  INTERNAL_SIZE_T system_mem</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  INTERNAL_SIZE_T max_system_mem</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token punctuation" style="color:#393A34">}</span><span class="token punctuation" style="color:#393A34">;</span><br></span></code></pre></div></div><p>빈 검색시 비어있는 빈을 건너띄기 위해, <code>binmap</code>이라는 추가적인 전략도 사용된다.<br>
+<!-- -->이는 빈이 확실히 비어있는지 여부를 기록하는 bitvector로, 이를 통해 청크를 찾는 순회 중에 비어있는 빈을 건너띌 수 있다.</p><p>이 비트들은 빈이 비워지는 즉시 항상 0으로 설정되는 것은 아니다. 대신, <code>malloc</code>이 순회하는 도중 해당 빈이 비어있는 것을 발견했을 때만 0으로 설정된다.</p></div></div>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="스레드-로컬-캐시-tcache">스레드 로컬 캐시 (tcache)<a href="#스레드-로컬-캐시-tcache" class="hash-link" aria-label="스레드 로컬 캐시 (tcache)에 대한 직접 링크" title="스레드 로컬 캐시 (tcache)에 대한 직접 링크">​</a></h3>
+<div class="theme-admonition theme-admonition-note admonition_xJq3 alert alert--secondary"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 14 16"><path fill-rule="evenodd" d="M6.3 5.69a.942.942 0 0 1-.28-.7c0-.28.09-.52.28-.7.19-.18.42-.28.7-.28.28 0 .52.09.7.28.18.19.28.42.28.7 0 .28-.09.52-.28.7a1 1 0 0 1-.7.3c-.28 0-.52-.11-.7-.3zM8 7.99c-.02-.25-.11-.48-.31-.69-.2-.19-.42-.3-.69-.31H6c-.27.02-.48.13-.69.31-.2.2-.3.44-.31.69h1v3c.02.27.11.5.31.69.2.2.42.31.69.31h1c.27 0 .48-.11.69-.31.2-.19.3-.42.31-.69H8V7.98v.01zM7 2.3c-3.14 0-5.7 2.54-5.7 5.68 0 3.14 2.56 5.7 5.7 5.7s5.7-2.55 5.7-5.7c0-3.15-2.56-5.69-5.7-5.69v.01zM7 .98c3.86 0 7 3.14 7 7s-3.14 7-7 7-7-3.12-7-7 3.14-7 7-7z"></path></svg></span>노트</div><div class="admonitionContent_BuS1"><p><code>malloc</code>은 다중 스레드를 인지하기는 하지만, 그것이 인지 범위의 거의 전부이다. 즉, 그저 &#x27;다중 스레드가 존재한다&#x27;는 사실만 안다.</p><p>NUMA 아키텍처 최적화, 스레드 지역성(locality) 조정, 코어별 스레드 정렬 등을 위한 코드는 없다. 이러한 문제들은 커널이 충분히 잘 처리할 것이라고 가정한다.</p></div></div>
+<p>각 스레드는 마지막으로 사용했던 아레나(arena)를 기억하는 <strong>thread-local variable</strong>를 가짐<br>
+<!-- -->만약 스레드가 아레나를 사용해야 할 때,</p>
+<ul>
+<li>그 아레나가 (다른 스레드에 의해) 사용 중이라면, 해당 스레드는 아레나가 풀릴 때까지 block됨</li>
+<li>스레드가 아레나를 한 번도 사용한 적이 없다면, 다음 중 하나<!-- -->
+<ul>
+<li>사용되지 않은 아레나를 재사용</li>
+<li>새 아레나를 생성</li>
+<li>global list에서 다음 아레나를 선택</li>
+</ul>
+</li>
+</ul>
+<p>각 스레드는 각 스레드별 캐시인 <strong>tcache</strong>를 가지며, 여기에는 아레나를 잠글 필요 없이 접근할 수 있는 소규모의 청크 모음이 들어있음</p>
+<ul>
+<li>fastbin과 유사하게 청크들이 singly-linked lists로 저장</li>
+<li>링크가 청크 헤더가 아닌 payload(사용자 영역)을 가리킴</li>
+<li>각 빈에 허용되는 청크의 수에 제한이 있음 - <strong>tcache_count</strong></li>
+<li>각 빈의 청크 크기가 모두 같아 청크 크기에 따라 간접적으로 인덱싱됨</li>
+</ul>
+<p><img decoding="async" loading="lazy" alt="img" src="/blog/assets/images/image-1-e35b55823b1eebf1f01c214506a75271.png" width="1484" height="646" class="img_ev3q"></p>
+<p>tcache에서는 요청한 크기에 정확히 맞는 청크만이 할당</p>
+<ul>
+<li>내부 단편화 방지를 위해, 만약 요청한 크기에 대한 tcache 빈이 비어있다면, 다음으로 더 큰 크기의 청크를 사용하지 않음</li>
+<li>대신 스레드의 아레나를 잠그고 거기서부터 작업하는 일반적인 <code>malloc</code> 루틴을 사용</li>
+</ul>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="malloc-알고리즘">Malloc 알고리즘<a href="#malloc-알고리즘" class="hash-link" aria-label="Malloc 알고리즘에 대한 직접 링크" title="Malloc 알고리즘에 대한 직접 링크">​</a></h3>
+<p><code>malloc</code>은 다음과 같이 작동한다.</p>
+<ol>
+<li>tcache에 크기가 정확히 일치하는 청크가 있다면, 이를 호출자에게 반환<!-- -->
+<ul>
+<li>더 큰 크기의 빈에서 청크를 가져와 사용하려는 시도는 하지 않음</li>
+</ul>
+</li>
+<li>요청이 충분히 크다면, <code>mmap()</code>을 사용하여 운영체제로부터 직접 메모리를 요청</li>
+<li>적절한 fastbin에 청크가 있다면 사용<!-- -->
+<ul>
+<li>사용 가능한 청크가 더 있다면 tcache를 미리 채워두기도 함</li>
+</ul>
+</li>
+<li>적절한 smallbin에 청크가 있다면 사용<!-- -->
+<ul>
+<li>이때도 tcache를 미리 채워둘 수 있음</li>
+</ul>
+</li>
+<li>요청이 large라면, 잠시 시간을 들여 fastbin에 있는 모든 것을 꺼내 unsorted bin으로 이동시키며, 이동하는 과정에서 (인접 청크와) 병합</li>
+<li>unsorted 리스트에서 청크들을 꺼내기 시작하고, (병합을 수행하며) small/large 빈으로 이동, 이 과정에서 알맞은 크기의 청크가 발견되면 사용<!-- -->
+<ul>
+<li>코드가 small/large 빈에 청크를 넣는 유일한 지점이 여기</li>
+</ul>
+</li>
+<li>요청이 large라면, 적절한 large bin을 검색하고, (없다면) 순차적으로 더 큰 빈들을 검색하여, 충분히 큰 청크를 찾을 때까지 계속함</li>
+<li>(small 요청의 경우) fastbin에 여전히 청크가 남아있다면 그것들을 병합하고 이전 두 단계(6, 7번)를 반복</li>
+<li>top 청크의 일부를 분할(split)하여 사용<!-- -->
+<ul>
+<li>필요하다면, 이 과정 전에 top 청크를 (OS로부터 메모리를 받아) 미리 확장할 수 있음</li>
+</ul>
+</li>
+</ol>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="free-알고리즘">Free 알고리즘<a href="#free-알고리즘" class="hash-link" aria-label="Free 알고리즘에 대한 직접 링크" title="Free 알고리즘에 대한 직접 링크">​</a></h3>
+<div class="theme-admonition theme-admonition-info admonition_xJq3 alert alert--info"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 14 16"><path fill-rule="evenodd" d="M7 2.3c3.14 0 5.7 2.56 5.7 5.7s-2.56 5.7-5.7 5.7A5.71 5.71 0 0 1 1.3 8c0-3.14 2.56-5.7 5.7-5.7zM7 1C3.14 1 0 4.14 0 8s3.14 7 7 7 7-3.14 7-7-3.14-7-7-7zm1 3H6v5h2V4zm0 6H6v2h2v-2z"></path></svg></span>정보</div><div class="admonitionContent_BuS1"><p>일반적으로 메모리를 free 한다고 해서 해당 메모리가 다른 애플리케이션이 사용할 수 있도록 운영체제로 즉시 반환되는 것은 아니다. <code>free()</code> 호출은 해당 메모리 조각을 애플리케이션이 <strong>재사용할 수 있도록</strong> 표시하는 것일 뿐, 운영체제의 관점에서는 여전히 해당 애플리케이션 소유이다.</p><p>하지만 힙의 top 청크가 충분히 커지면, 그 메모리 중 일부는 운영체제로 반환될 수 있다.</p></div></div>
+<p><code>free</code>는 다음과 같이 작동한다.</p>
+<ol>
+<li>tcache에 공간이 있다면, 청크를 그곳에 저장하고 return</li>
+<li>청크가 충분히 작다면, 적절한 fastbin에 배치</li>
+<li>청크가 <code>mmap</code>으로 할당되었던 것이라면, <code>munmap</code>을 호출하여 (OS에 즉시) 반환</li>
+<li>이 청크가 다른 free 청크와 인접해 있는지 확인하고, 만약 그렇다면 병합</li>
+<li>청크가 (병합 후) top 청크가 된 경우가 아니라면, unsorted 리스트에 배치</li>
+<li>(병합된) 청크가 충분히 크다면, fastbin에 있는 것들을 모두 병합하고, top 청크가 시스템에 메모리를 일부 반환할 수 있을 만큼 충분히 커졌는지 확인<!-- -->
+<ul>
+<li>이 단계는 성능상의 이유로 지연될 수 있으며, <code>malloc</code>이나 다른 호출 중에 발생할 수도 있음</li>
+</ul>
+</li>
+</ol>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="realloc-알고리즘">Realloc 알고리즘<a href="#realloc-알고리즘" class="hash-link" aria-label="Realloc 알고리즘에 대한 직접 링크" title="Realloc 알고리즘에 대한 직접 링크">​</a></h3>
+<div class="theme-admonition theme-admonition-note admonition_xJq3 alert alert--secondary"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 14 16"><path fill-rule="evenodd" d="M6.3 5.69a.942.942 0 0 1-.28-.7c0-.28.09-.52.28-.7.19-.18.42-.28.7-.28.28 0 .52.09.7.28.18.19.28.42.28.7 0 .28-.09.52-.28.7a1 1 0 0 1-.7.3c-.28 0-.52-.11-.7-.3zM8 7.99c-.02-.25-.11-.48-.31-.69-.2-.19-.42-.3-.69-.31H6c-.27.02-.48.13-.69.31-.2.2-.3.44-.31.69h1v3c.02.27.11.5.31.69.2.2.42.31.69.31h1c.27 0 .48-.11.69-.31.2-.19.3-.42.31-.69H8V7.98v.01zM7 2.3c-3.14 0-5.7 2.54-5.7 5.68 0 3.14 2.56 5.7 5.7 5.7s5.7-2.55 5.7-5.7c0-3.15-2.56-5.69-5.7-5.69v.01zM7 .98c3.86 0 7 3.14 7 7s-3.14 7-7 7-7-3.12-7-7 3.14-7 7-7z"></path></svg></span>노트</div><div class="admonitionContent_BuS1"><p><code>realloc</code>에 <code>NULL</code> 포인터를 넘기거나 크기를 0으로 요청하는 경우는 별도로 처리된다.</p></div></div>
+<p><code>mmap</code>된 청크의 경우</p>
+<ul>
+<li>개별적인 <code>mmap</code> 호출을 통해 할당된 메모리은 가능하다면 <code>mremap()</code>을 통해 <code>realloc</code>됨<!-- -->
+<ul>
+<li>이때 커널의 동작 방식에 따라 새로운 메모리 주소는 기존 주소와 다를 수도 있고 같을 수도 있음</li>
+</ul>
+</li>
+<li>만약 시스템이 <code>munmap()</code>을 지원하지 않는데 새로운 크기가 기존 크기보다 작다면, 아무 작업도 수행하지 않고 기존 주소를 그대로 반환</li>
+<li>그 외의 경우에는 malloc → copy → free 과정이 발생 (새로운 주소 반환)</li>
+</ul>
+<p>아레나 청크의 경우</p>
+<ul>
+<li>크기가 줄어드는 경우: 할당 크기가 나눌 가치가 있을 만큼(worth it) 충분히 줄어든다면, 해당 청크는 두 개로 분할<!-- -->
+<ul>
+<li>첫 번째 부분(기존 주소를 가짐)은 사용자에게 반환</li>
+<li>나머지 뒷부분은 free chunk 상태로 아레나에 반환</li>
+<li>단, 미미한 크기 감소는 &quot;동일한 크기&quot;로 취급되어 분할되지 않음</li>
+</ul>
+</li>
+<li>크기가 커지는 경우: 바로 다음(인접한) 청크를 확인<!-- -->
+<ul>
+<li>만약 인접 청크가 free이거나, 힙의 확장 가능한 끝부분을 나타내는 Top 블록이면서 합쳤을 때 크기가 충분하다면, 현재 청크와 그 청크를 병합</li>
+<li>이렇게 병합하여 충분히 큰 블록을 만든 뒤, 필요하다면 다시 분할</li>
+<li>이 경우 기존 포인터가 그대로 반환 (주소 변경 없음)</li>
+<li>할당이 커져야 하는데 현재 청크나 다음 청크를 활용할 방법이 없다면, malloc → copy → free 과정이 발생 (새로운 주소 반환)</li>
+</ul>
+</li>
+</ul>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="switching-arenas">Switching arenas<a href="#switching-arenas" class="hash-link" aria-label="Switching arenas에 대한 직접 링크" title="Switching arenas에 대한 직접 링크">​</a></h3>
+<div class="theme-admonition theme-admonition-info admonition_xJq3 alert alert--info"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 14 16"><path fill-rule="evenodd" d="M7 2.3c3.14 0 5.7 2.56 5.7 5.7s-2.56 5.7-5.7 5.7A5.71 5.71 0 0 1 1.3 8c0-3.14 2.56-5.7 5.7-5.7zM7 1C3.14 1 0 4.14 0 8s3.14 7 7 7 7-3.14 7-7-3.14-7-7-7zm1 3H6v5h2V4zm0 6H6v2h2v-2z"></path></svg></span>정보</div><div class="admonitionContent_BuS1"><p>프로세스의 수명 동안 스레드에 연결된 아레나가 변경될 수 있다.</p></div></div>
+<p>아레나가 변경되는 시나리오는 다음과 같다.</p>
+<ul>
+<li>스레드가 현재 연결된 아레나에서 메모리 할당에 실패<!-- -->
+<ul>
+<li>병합 시도, free list 검색, unsorted list 처리 등을 모두 수행했다고 가정</li>
+<li>힙 확장을 시도했으나 <code>sbrk</code>가 실패했거나, 새로운 메모리 매핑 생성이 실패했다고 가정</li>
+</ul>
+</li>
+<li>이전에 <code>mmap</code> 기반 힙을 사용하는 non-main 아레나를 사용 중이었다면, <code>arena_get_retry</code>를 통해 <code>sbrk</code> 기반 힙을 사용하는 메인 아레나로 전환<!-- -->
+<ul>
+<li>메인 아레나를 사용 중이었다면, 비 메인 아레나(free List에서 가져오거나 새로 생성한 것)로 전환</li>
+<li>단일 스레드 프로세스인 경우에는 이 전환을 수행하지 않고, 이 시점에서 바로 <code>ENOMEM</code>을 반환하며 실패 (<code>sbrk</code>도 안 되고 메인 아레나 확장도 실패했다면, 비 메인 아레나 역시 안 될 것이라 가정하기 때문)</li>
+</ul>
+</li>
+</ul>
+<div class="theme-admonition theme-admonition-note admonition_xJq3 alert alert--secondary"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 14 16"><path fill-rule="evenodd" d="M6.3 5.69a.942.942 0 0 1-.28-.7c0-.28.09-.52.28-.7.19-.18.42-.28.7-.28.28 0 .52.09.7.28.18.19.28.42.28.7 0 .28-.09.52-.28.7a1 1 0 0 1-.7.3c-.28 0-.52-.11-.7-.3zM8 7.99c-.02-.25-.11-.48-.31-.69-.2-.19-.42-.3-.69-.31H6c-.27.02-.48.13-.69.31-.2.2-.3.44-.31.69h1v3c.02.27.11.5.31.69.2.2.42.31.69.31h1c.27 0 .48-.11.69-.31.2-.19.3-.42.31-.69H8V7.98v.01zM7 2.3c-3.14 0-5.7 2.54-5.7 5.68 0 3.14 2.56 5.7 5.7 5.7s5.7-2.55 5.7-5.7c0-3.15-2.56-5.69-5.7-5.69v.01zM7 .98c3.86 0 7 3.14 7 7s-3.14 7-7 7-7-3.12-7-7 3.14-7 7-7z"></path></svg></span>노트</div><div class="admonitionContent_BuS1"><p>메모리가 부족한 상황에서는 할당을 만족할 공간이 있는 힙을 찾기 위해, 스레드가 <code>sbrk</code> 기반인 메인 아레나와 <code>mmap</code> 기반인 비 메인 아레나 사이를 빈번하게 오갈 수 있다는 점에 유의해야 한다.</p></div></div></div><footer class="docusaurus-mt-lg"><div class="row margin-top--sm theme-blog-footer-edit-meta-row"><div class="col"><b>태그:</b><ul class="tags_jXut padding--none margin-left--sm"><li class="tag_QGVx"><a rel="tag" title="C tag description" class="tag_zVej tagRegular_sFm0" href="/blog/tags/c/">C</a></li></ul></div></div><div class="row margin-top--sm theme-blog-footer-edit-meta-row"><div class="col"><a href="https://github.com/dream2405/blog/tree/main/blog/2025-09-03-malloc/index.md" target="_blank" rel="noopener noreferrer" class="theme-edit-this-page"><svg fill="currentColor" height="20" width="20" viewBox="0 0 40 40" class="iconEdit_Z9Sw" aria-hidden="true"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>페이지 편집</a></div><div class="col lastUpdated_JAkA"></div></div></footer></article><nav class="pagination-nav docusaurus-mt-lg" aria-label="블로그 게시물 탐색"><a class="pagination-nav__link pagination-nav__link--prev" href="/blog/foldables-and-friends/"><div class="pagination-nav__sublabel">이전 게시물</div><div class="pagination-nav__label">Foldables and friends</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/blog/intro-wait-free-algorithms/"><div class="pagination-nav__sublabel">다음 게시물</div><div class="pagination-nav__label">An Introduction to wait-free algorithms</div></a></nav></main><div class="col col--2"><div class="tableOfContents_bqdL thin-scrollbar"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#메모리-할당이란-무엇인가" class="table-of-contents__link toc-highlight">메모리 할당이란 무엇인가?</a><ul><li><a href="#프로세스와-가상-메모리" class="table-of-contents__link toc-highlight">프로세스와 가상 메모리</a></li><li><a href="#메모리-할당의-정의" class="table-of-contents__link toc-highlight">메모리 할당의 정의</a></li></ul></li><li><a href="#메모리-할당의-방식" class="table-of-contents__link toc-highlight">메모리 할당의 방식</a></li><li><a href="#c-프로그램에서의-메모리-할당" class="table-of-contents__link toc-highlight">C 프로그램에서의 메모리 할당</a><ul><li><a href="#동적-할당" class="table-of-contents__link toc-highlight">동적 할당</a></li></ul></li><li><a href="#아이디어" class="table-of-contents__link toc-highlight">아이디어</a><ul><li><a href="#청크" class="table-of-contents__link toc-highlight">청크</a></li><li><a href="#아레나" class="table-of-contents__link toc-highlight">아레나</a></li></ul></li><li><a href="#gnu-할당자" class="table-of-contents__link toc-highlight">GNU 할당자</a><ul><li><a href="#malloc의-할당-방식" class="table-of-contents__link toc-highlight">Malloc의 할당 방식</a></li><li><a href="#malloc-internal" class="table-of-contents__link toc-highlight">Malloc Internal</a></li><li><a href="#청크-1" class="table-of-contents__link toc-highlight">청크</a></li><li><a href="#아레나와-힙" class="table-of-contents__link toc-highlight">아레나와 힙</a></li><li><a href="#스레드-로컬-캐시-tcache" class="table-of-contents__link toc-highlight">스레드 로컬 캐시 (tcache)</a></li><li><a href="#malloc-알고리즘" class="table-of-contents__link toc-highlight">Malloc 알고리즘</a></li><li><a href="#free-알고리즘" class="table-of-contents__link toc-highlight">Free 알고리즘</a></li><li><a href="#realloc-알고리즘" class="table-of-contents__link toc-highlight">Realloc 알고리즘</a></li><li><a href="#switching-arenas" class="table-of-contents__link toc-highlight">Switching arenas</a></li></ul></li></ul></div></div></div></div></div><footer class="theme-layout-footer footer footer--dark"><div class="container container-fluid"><div class="row footer__links"><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Community</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://stackoverflow.com/questions/tagged/docusaurus" target="_blank" rel="noopener noreferrer" class="footer__link-item">Stack Overflow<svg width="13.5" height="13.5" aria-hidden="true" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a></li><li class="footer__item"><a href="https://discordapp.com/invite/docusaurus" target="_blank" rel="noopener noreferrer" class="footer__link-item">Discord<svg width="13.5" height="13.5" aria-hidden="true" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a></li><li class="footer__item"><a href="https://x.com/docusaurus" target="_blank" rel="noopener noreferrer" class="footer__link-item">X<svg width="13.5" height="13.5" aria-hidden="true" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a></li></ul></div><div class="theme-layout-footer-column col footer__col"><div class="footer__title">More</div><ul class="footer__items clean-list"><li class="footer__item"><a class="footer__link-item" href="/blog/">Blog</a></li><li class="footer__item"><a href="https://github.com/facebook/docusaurus" target="_blank" rel="noopener noreferrer" class="footer__link-item">GitHub<svg width="13.5" height="13.5" aria-hidden="true" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a></li></ul></div></div><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2025 My Project, Inc. Built with Docusaurus.</div></div></div></footer></div>
+</body>
+</html>
