@@ -3,8 +3,7 @@ slug: malloc
 title: C언어의 메모리 할당과 Malloc
 authors: [dream2405]
 tags: [C]
-image: "./image.png"
-draft: true
+image: "./image-6.png"
 ---
 
 이 게시글은 C언어의 `malloc`에 대해 좀 더 자세하게 알아보기 위해 작성됐다.
@@ -468,7 +467,7 @@ struct malloc_chunk {
 
 할당된 아레나를 위한 메모리는 해당 아레나의 초기 힙에서 가져온다.
 
-![image.png](image%206.png)
+![image.png](image-6.png)
 
 이 그림의 경우, 각 힙의 구성 요소는
 
