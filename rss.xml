@@ -4,10 +4,384 @@
         <title>낙서장 Blog</title>
         <link>https://dream2405.github.io/blog/</link>
         <description>낙서장 Blog</description>
-        <lastBuildDate>Wed, 10 Sep 2025 08:31:08 GMT</lastBuildDate>
+        <lastBuildDate>Fri, 17 Oct 2025 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <language>ko</language>
+        <item>
+            <title><![CDATA[깃/깃허브 치트시트]]></title>
+            <link>https://dream2405.github.io/blog/git-cheatsheet/</link>
+            <guid>https://dream2405.github.io/blog/git-cheatsheet/</guid>
+            <pubDate>Fri, 17 Oct 2025 00:00:00 GMT</pubDate>
+            <description><![CDATA[banner]]></description>
+            <content:encoded><![CDATA[<p><img decoding="async" loading="lazy" alt="banner" src="https://dream2405.github.io/blog/assets/images/image-11eda22600a523177ba9e836472244f7.png" width="714" height="774" class="img_ev3q"></p>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="git-config">Git Config<a href="https://dream2405.github.io/blog/git-cheatsheet/#git-config" class="hash-link" aria-label="Git Config에 대한 직접 링크" title="Git Config에 대한 직접 링크">​</a></h2>
+<p>설정 파일 우선순위</p>
+<ol>
+<li><code>.git/config</code>: 특정 저장소에만 적용<!-- -->
+<ul>
+<li><code>git config --local</code> 옵션 (기본값)</li>
+</ul>
+</li>
+<li><code>~/.gitconfig</code>, <code>~/.config/git/config</code>: 특정 사용자에게만 적용<!-- -->
+<ul>
+<li><code>git config --global</code> 옵션</li>
+</ul>
+</li>
+<li><code>/etc/gitconfig</code>: 시스템의 모든 사용자와 모든 저장소에 적용<!-- -->
+<ul>
+<li><code>git config --system</code> 옵션 (관리자 권한 필요)</li>
+</ul>
+</li>
+</ol>
+<p>유용한 옵션</p>
+<ul>
+<li>옵션<!-- -->
+<ul>
+<li><code>git config --global user.name "Jaehyun Nam"</code></li>
+<li><code>git config --global user.email namjh@dankook.ac.kr</code></li>
+<li><code>git config --global core.editor emacs</code></li>
+<li><code>git config --global init.defaultBranch main</code></li>
+</ul>
+</li>
+<li>설정 확인<!-- -->
+<ul>
+<li><code>git config --list</code></li>
+</ul>
+</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="로컬-저장소-생성">로컬 저장소 생성<a href="https://dream2405.github.io/blog/git-cheatsheet/#%EB%A1%9C%EC%BB%AC-%EC%A0%80%EC%9E%A5%EC%86%8C-%EC%83%9D%EC%84%B1" class="hash-link" aria-label="로컬 저장소 생성에 대한 직접 링크" title="로컬 저장소 생성에 대한 직접 링크">​</a></h2>
+<p>명령어</p>
+<ul>
+<li><code>git init</code>: 로컬 저장소 생성<!-- -->
+<ul>
+<li>해당 폴더에 <code>.git</code> 디렉토리 생성</li>
+</ul>
+</li>
+<li><code>git init -b &lt;branch-name&gt;</code>: 브랜치 이름 지정</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="파일-추가">파일 추가<a href="https://dream2405.github.io/blog/git-cheatsheet/#%ED%8C%8C%EC%9D%BC-%EC%B6%94%EA%B0%80" class="hash-link" aria-label="파일 추가에 대한 직접 링크" title="파일 추가에 대한 직접 링크">​</a></h2>
+<p>Staging Area에 파일 추가</p>
+<ul>
+<li>Staging Area는 index라고 하기도 함</li>
+</ul>
+<p>명령어</p>
+<ul>
+<li><code>git add [파일명]</code></li>
+<li><code>git add [파일1] [파일2]</code></li>
+<li><code>git add .</code>: 현재 디렉토리와 그 하위 모든 변경된 파일들을 한 번에 Staging Area에 추가</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="커밋">커밋<a href="https://dream2405.github.io/blog/git-cheatsheet/#%EC%BB%A4%EB%B0%8B" class="hash-link" aria-label="커밋에 대한 직접 링크" title="커밋에 대한 직접 링크">​</a></h2>
+<p>Staging Area에 있는 파일 변경 사항을 로컬 저장소에 저장</p>
+<p>명령어</p>
+<ul>
+<li><code>git commit -m "변경 내용을 간단히 요약한 메시지"</code></li>
+<li><code>git commit -s -m "변경 내용을 간단히 요약한 메시지"</code>: 개발자 서명 규약(DCO)에 동의</li>
+<li><code>git commit -am "커밋 메시지"</code>: 수정된 파일들을 자동으로 스테이징하고 커밋<!-- -->
+<ul>
+<li>깃이 추적하지 않는 파일은 <code>git add</code>로 추가 해야됨!</li>
+</ul>
+</li>
+<li><code>git commit --amend</code>: 기존 커밋을 완전히 새로운 커밋으로 대체<!-- -->
+<ul>
+<li>옵션 없음: 에디터를 열어 최근 커밋 메시지 수정</li>
+<li><code>git commit --amend -m "메시지"</code>: 명령줄에서 커밋 메시지 교체</li>
+<li><code>git commit --amend --no-edit</code>: 메시지 수정 없이 스테이징된 변경사항만 최근 커밋에 추가</li>
+<li><strong>원격 저장소에 이미 올라간 커밋은 충돌 발생!</strong>
+<ul>
+<li><code>git push --force</code>로 덮어써야 함</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="푸시">푸시<a href="https://dream2405.github.io/blog/git-cheatsheet/#%ED%91%B8%EC%8B%9C" class="hash-link" aria-label="푸시에 대한 직접 링크" title="푸시에 대한 직접 링크">​</a></h2>
+<p>로컬 저장소의 커밋 이력을 원격 저장소에 업로드</p>
+<p>명령어</p>
+<ul>
+<li><code>git push</code></li>
+<li><code>git push -u origin main</code>: 로컬 브랜치와 원격 브랜치를 연결<!-- -->
+<ul>
+<li>한 번 설정해두면 이후에는 브랜치 이름을 입력할 필요 없이 <code>git push</code>나 <code>git pull</code>만 입력해도 자동으로 <code>origin</code>의 <code>main</code>과 통신</li>
+</ul>
+</li>
+<li><code>git push --force</code>: 원격 저장소의 히스토리를 로컬 히스토리로 강제로 덮어씀</li>
+<li><code>git push --force-with-lease</code>: 내가 마지막으로 확인했던 원격 저장소의 상태와 현재 서버의 상태가 다를 경우 푸시를 거부</li>
+<li><code>git push origin -d feature-login</code>: 원격 저장소에 있는 브랜치 삭제<!-- -->
+<ul>
+<li><code>git branch -d</code>로는 원격 저장소의 브랜치를 삭제할 수 없음!</li>
+</ul>
+</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="태그">태그<a href="https://dream2405.github.io/blog/git-cheatsheet/#%ED%83%9C%EA%B7%B8" class="hash-link" aria-label="태그에 대한 직접 링크" title="태그에 대한 직접 링크">​</a></h2>
+<p>명령어</p>
+<ul>
+<li><code>git tag</code>: 저장소에 있는 모든 태그 목록 확인</li>
+<li><code>git tag v1.0.0</code>: 특정 커밋에 이름을 붙임</li>
+<li><code>git tag -a v1.0.0 -m "첫 번째 정식 출시 버전"</code>: 주석 맺은 태그 붙이기</li>
+<li><code>git tag -a v0.9.0 a1b2c3d -m "이전 버전 추가 태깅"</code>: 특정 커밋에 주석 맺은 태그 붙이기</li>
+<li><code>git tag -d v0.9.0</code>: 로컬 저장소에서 태그 삭제</li>
+<li><code>git push origin v1.0.0</code>: 원격 저장소에 태그 푸시</li>
+<li><code>git push origin --tags</code>: 모든 태그를 한 번에 푸시</li>
+<li><code>git push origin --delete v1.0.0</code>: 원격 저장소에서 태그 삭제</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="상태-확인">상태 확인<a href="https://dream2405.github.io/blog/git-cheatsheet/#%EC%83%81%ED%83%9C-%ED%99%95%EC%9D%B8" class="hash-link" aria-label="상태 확인에 대한 직접 링크" title="상태 확인에 대한 직접 링크">​</a></h2>
+<p>워킹 트리의 상태 확인</p>
+<ul>
+<li>커밋할 파일, 추적 안 된 파일, 수정된 파일 구분 표시</li>
+</ul>
+<p>명령어</p>
+<ul>
+<li><code>git status</code></li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="로그-확인">로그 확인<a href="https://dream2405.github.io/blog/git-cheatsheet/#%EB%A1%9C%EA%B7%B8-%ED%99%95%EC%9D%B8" class="hash-link" aria-label="로그 확인에 대한 직접 링크" title="로그 확인에 대한 직접 링크">​</a></h2>
+<p>Show commit logs</p>
+<p>명령어</p>
+<ul>
+<li><code>git log</code>: 가장 최근 커밋부터 역순으로 표시</li>
+<li><code>git log --oneline</code>: 각 커밋을 한줄로 요약</li>
+<li><code>git log -p</code>: diff도 보여줌</li>
+<li><code>git log --oneline --graph --all</code>: 브랜치를 텍스트 그래픽으로 시각화</li>
+<li><code>git log -n 5</code>: 최근 5개의 커밋만 확인</li>
+<li><code>git log -- README.md</code>: 특정 파일이 변경된 커밋들만 확인</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="변경사항-확인">변경사항 확인<a href="https://dream2405.github.io/blog/git-cheatsheet/#%EB%B3%80%EA%B2%BD%EC%82%AC%ED%95%AD-%ED%99%95%EC%9D%B8" class="hash-link" aria-label="변경사항 확인에 대한 직접 링크" title="변경사항 확인에 대한 직접 링크">​</a></h2>
+<p>변경 사항을 비교하고 시각화</p>
+<p>명령어</p>
+<ul>
+<li><code>git diff</code>: 워킹 디렉토리 vs 스테이징 영역</li>
+<li><code>git diff --cached</code>: 스테이징 영역 vs 최신 커밋 (HEAD)</li>
+<li><code>git diff HEAD</code>: 워킹 디렉토리 vs HEAD</li>
+<li><code>git diff &lt;commit_id_A&gt; &lt;commit_id_B&gt;</code>: 두 커밋간 비교</li>
+<li><code>git diff branch_A..branch_B</code>: 두 브랜치 간 비교</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="워킹-디렉토리스테이징-되돌리기">워킹 디렉토리/스테이징 되돌리기<a href="https://dream2405.github.io/blog/git-cheatsheet/#%EC%9B%8C%ED%82%B9-%EB%94%94%EB%A0%89%ED%86%A0%EB%A6%AC%EC%8A%A4%ED%85%8C%EC%9D%B4%EC%A7%95-%EB%90%98%EB%8F%8C%EB%A6%AC%EA%B8%B0" class="hash-link" aria-label="워킹 디렉토리/스테이징 되돌리기에 대한 직접 링크" title="워킹 디렉토리/스테이징 되돌리기에 대한 직접 링크">​</a></h2>
+<p>명령어</p>
+<ul>
+<li><code>git restore &lt;파일명&gt;</code>: 파일을 마지막 커밋 상태로 되돌림</li>
+<li><code>git restore --staged &lt;파일명&gt;</code>: <code>git add</code>로 올린 파일을 스테이징에서 제외</li>
+<li><code>git restore --source=&lt;커밋해시 또는 브랜치명&gt; &lt;파일명&gt;</code>: 지정한 소스(commit/branch)에 있는 해당 파일의 내용이 현재 워킹 디렉토리에 덮어씌워짐</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="커밋-취소">커밋 취소<a href="https://dream2405.github.io/blog/git-cheatsheet/#%EC%BB%A4%EB%B0%8B-%EC%B7%A8%EC%86%8C" class="hash-link" aria-label="커밋 취소에 대한 직접 링크" title="커밋 취소에 대한 직접 링크">​</a></h2>
+<p>Reset current HEAD to the specified state</p>
+<p><strong>HEAD</strong>: 현재 작업 중인 브랜치의 가장 최신 커밋을 가리키는 포인터</p>
+<ul>
+<li>지금 어디에서 작업 중인지를 알려주는 Git의 위치 표시</li>
+<li>브랜치를 이동하면 HEAD도 함께 이동</li>
+<li>HEAD의 조상 찾기<!-- -->
+<ul>
+<li><code>HEAD^&lt;n&gt;</code>: n번째 부모 커밋 선택</li>
+<li><code>HEAD~&lt;n&gt;</code>: 첫번째 부모만을 따라서 n번 올라감</li>
+<li><code>HEAD^{/&lt;text&gt;}</code>: HEAD 위치에서 갈 수 있는 커밋들 중 커밋 메시지가 <code>&lt;text&gt;</code> 정규 표현식에 매칭되는 제일 최신 커밋</li>
+</ul>
+</li>
+</ul>
+<p>명령어</p>
+<ul>
+<li><code>git reset --soft HEAD~1</code>: 최근 커밋만 삭제, 변경 내용은 스테이징 영역에 유지</li>
+<li><code>git reset --mixed HEAD~1</code>: 커밋 + 스테이징도 삭제 (기본 옵션), 변경 내용은 워킹 디렉토리에 남김</li>
+<li><code>git reset --hard HEAD~1</code>: 모든 내용 삭제 (커밋, 스테이징, 파일 수정까지 모두 제거됨)<!-- -->
+<ul>
+<li><strong>되돌릴 수 없음!!</strong></li>
+</ul>
+</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="revert">Revert<a href="https://dream2405.github.io/blog/git-cheatsheet/#revert" class="hash-link" aria-label="Revert에 대한 직접 링크" title="Revert에 대한 직접 링크">​</a></h2>
+<p>Revert some existing commits</p>
+<p>명령어</p>
+<ul>
+<li><code>git revert &lt;commit&gt;</code>: 지정된 커밋을 되돌리는 커밋을 만듦</li>
+<li><code>git revert A..B</code>: A 커밋 이후 B 커밋 이전의 커밋들을 역순으로 되돌리는 커밋을 만듦</li>
+<li><code>git revert &lt;해시&gt; --no-edit</code>: 커밋 메시지 수정 없이 커밋을 되돌리는 커밋을 만듦</li>
+<li><code>git revert -n &lt;커밋해시&gt;</code>: 커밋을 되돌리고 스테이징 영역에 추가하지 않음<!-- -->
+<ul>
+<li><code>git revert --no-commit &lt;커밋해시&gt;</code>와 동일</li>
+</ul>
+</li>
+<li><code>git revert -m 1 &lt;머지커밋해시&gt;</code>: 머지할 당시 내가 머물고 있던 브랜치의 커밋으로 되돌리는 커밋을 만듦<!-- -->
+<ul>
+<li><code>git revert</code>로는 머지 커밋을 되돌릴 수 없음</li>
+</ul>
+</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="파일-삭제이동">파일 삭제/이동<a href="https://dream2405.github.io/blog/git-cheatsheet/#%ED%8C%8C%EC%9D%BC-%EC%82%AD%EC%A0%9C%EC%9D%B4%EB%8F%99" class="hash-link" aria-label="파일 삭제/이동에 대한 직접 링크" title="파일 삭제/이동에 대한 직접 링크">​</a></h2>
+<p>git의 스테이징 영역 자동 관리</p>
+<p>명령어</p>
+<ul>
+<li><code>git rm &lt;파일경로&gt;</code>: 파일 삭제 + 삭제한 상태 스테이징에 반영<!-- -->
+<ul>
+<li><code>rm</code>은 삭제 후 따로 <code>git add</code> 필요</li>
+</ul>
+</li>
+<li><code>git rm --cached &lt;파일경로&gt;</code>: 실제 파일은 그대로 두고 스테이징에서 제외</li>
+<li><code>git rm -r &lt;디렉토리&gt;</code>: 디렉토리 삭제 + 삭제한 상태 스테이징에 반영</li>
+<li><code>git mv &lt;이전경로&gt; &lt;새경로&gt;</code>: 파일 이동(또는 이름 변경) + 그 변화를 스테이징 영역에 즉시 반영<!-- -->
+<ul>
+<li><code>git rm</code>과 <code>git add</code>를 동시에 수행</li>
+</ul>
+</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="브랜치-확인-및-생성">브랜치 확인 및 생성<a href="https://dream2405.github.io/blog/git-cheatsheet/#%EB%B8%8C%EB%9E%9C%EC%B9%98-%ED%99%95%EC%9D%B8-%EB%B0%8F-%EC%83%9D%EC%84%B1" class="hash-link" aria-label="브랜치 확인 및 생성에 대한 직접 링크" title="브랜치 확인 및 생성에 대한 직접 링크">​</a></h2>
+<p>List, create, or delete branches</p>
+<p>명령어</p>
+<ul>
+<li><code>git branch</code>: 현재 로컬 브랜치 확인<!-- -->
+<ul>
+<li>현재 위치한 브랜치에 별표(*) 표시</li>
+</ul>
+</li>
+<li><code>git branch -r</code>: 원격 브랜치 확인</li>
+<li><code>git branch -a</code>: 모든 브랜치 확인<!-- -->
+<ul>
+<li>로컬 브랜치와 원격 브랜치 모두 확인</li>
+</ul>
+</li>
+<li><code>git branch &lt;branch-name&gt;</code>: 브랜치 생성</li>
+<li><code>git branch -d &lt;branch-name&gt;</code>: 브랜치 삭제<!-- -->
+<ul>
+<li>병합되지 않은 브랜치는 삭제 불가능</li>
+</ul>
+</li>
+<li><code>git branch -D &lt;branch-name&gt;</code>: 강제 삭제</li>
+<li><code>git branch -m [old-name] [new-name]</code>: 브랜치의 이름을 변경<!-- -->
+<ul>
+<li>병합되지 않은 브랜치의 이름 변경은 불가능</li>
+<li>병합된 브랜치의 이름 변경은 가능</li>
+</ul>
+</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="브랜치-이동">브랜치 이동<a href="https://dream2405.github.io/blog/git-cheatsheet/#%EB%B8%8C%EB%9E%9C%EC%B9%98-%EC%9D%B4%EB%8F%99" class="hash-link" aria-label="브랜치 이동에 대한 직접 링크" title="브랜치 이동에 대한 직접 링크">​</a></h2>
+<p>Switch branches</p>
+<p>명령어</p>
+<ul>
+<li><code>git switch &lt;branch-name&gt;</code>: 기존 브랜치로 이동</li>
+<li><code>git switch -c &lt;branch-name&gt;</code>: 새로운 브랜치 생성 후 이동<!-- -->
+<ul>
+<li><code>git branch &lt;branch-name&gt;</code>과 <code>git switch &lt;branch-name&gt;</code>을 동시에 수행</li>
+</ul>
+</li>
+<li><code>git switch -</code>: 바로 이전에 있던 브랜치로 돌아가기</li>
+<li><code>git switch --detach &lt;commit&gt;</code>: 특정 커밋 시점으로 이동 (임시 확인용)</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="브랜치-병합">브랜치 병합<a href="https://dream2405.github.io/blog/git-cheatsheet/#%EB%B8%8C%EB%9E%9C%EC%B9%98-%EB%B3%91%ED%95%A9" class="hash-link" aria-label="브랜치 병합에 대한 직접 링크" title="브랜치 병합에 대한 직접 링크">​</a></h2>
+<p>Merge branches</p>
+<p>Fast-forward vs Three-way 병합</p>
+<ul>
+<li>Fast-forward: 병합 대상 브랜치가 병합할 브랜치의 최신 커밋을 이미 가지고 있을 때<!-- -->
+<ul>
+<li>병합 대상 브랜치의 HEAD가 병합할 브랜치의 HEAD를 따라가게 됨</li>
+</ul>
+</li>
+<li>Three-way: 병합 대상 브랜치가 병합할 브랜치의 최신 커밋을 가지고 있지 않을 때<!-- -->
+<ul>
+<li>병합 대상 브랜치의 HEAD가 병합할 브랜치의 HEAD를 따라가게 됨</li>
+<li>새로운 병합 커밋 생성</li>
+</ul>
+</li>
+</ul>
+<p>명령어</p>
+<ul>
+<li><code>git merge &lt;branch-name&gt; -m "커밋 메시지"</code>: 현재 브랜치와 <code>&lt;branch-name&gt;</code> 브랜치를 병합<!-- -->
+<ul>
+<li>Fast-forward가 가능한 상황이라면 Fast-forward 병합</li>
+<li>Fast-forward가 불가능한 상황이라면 Three-way 병합</li>
+</ul>
+</li>
+<li><code>git merge --no-ff &lt;branch-name&gt;</code>: Fast-forward가 가능한 상황이라도 강제로 머지 커밋 생성</li>
+<li><code>git merge --ff-only &lt;branch-name&gt;</code>: Fast-forward가 가능한 상황만 병합</li>
+<li><code>git merge --abort</code>: 병합 중단</li>
+<li><code>git merge --continue</code>: 병합 중단 후 병합 재개</li>
+</ul>
+<p>충돌 해결</p>
+<ul>
+<li>머지 포기<!-- -->
+<ul>
+<li><code>git merge --abort</code>로 머지 시도 전 상태로 깨끗하게 되돌림</li>
+</ul>
+</li>
+<li>충돌 직접 해결<!-- -->
+<ol>
+<li>파일 수정: Git이 충돌을 표시한 파일을 열어 내용을 원하는 대로 정리</li>
+<li>스테이징: 수정이 완료된 파일을 <code>git add</code> 명령어로 인덱스에 올림</li>
+<li>마무리: <code>git commit</code> 또는 <code>git merge --continue</code>를 실행하여 머지를 최종 완료<!-- -->
+<ul>
+<li><code>git merge --continue</code>는 머지 중이 아닌데 실수로 입력하면 에러 메시지를 띄워주므로 더 안전함</li>
+</ul>
+</li>
+</ol>
+</li>
+</ul>
+<p>충돌 해결을 돕는 도구들</p>
+<ul>
+<li>머지 툴 사용: <code>git mergetool</code> 명령어를 입력하면 그래픽 기반의 머지 도구가 실행되어 시각적으로 코드를 비교하며 해결 가능</li>
+<li>Diff 확인: <code>git diff</code>를 실행하면 현재 브랜치(HEAD)와 합치려는 브랜치(MERGE_HEAD) 간의 차이점을 3-way diff 형식으로 보여줌</li>
+<li>브랜치별 로그 대조: <code>git log --merge -p &lt;경로&gt;</code>를 입력하면 먼저 현재 브랜치의 변경 사항을 보여준 뒤, 이어서 상대 브랜치의 변경 사항을 나란히 보여줌</li>
+</ul>
+<p>원본 파일 직접 보기 (Index 번호 활용):</p>
+<ul>
+<li><code>git show :1:파일명</code> – 두 브랜치의 공통 조상(Base) 상태를 보여줌</li>
+<li><code>git show :2:파일명</code> – 현재 내가 위치한 브랜치(HEAD)의 상태를 보여줌</li>
+<li><code>git show :3:파일명</code> – 합치려고 가져온 브랜치(MERGE_HEAD)의 상태를 보여줌</li>
+</ul>
+<div class="theme-admonition theme-admonition-note admonition_xJq3 alert alert--secondary"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 14 16"><path fill-rule="evenodd" d="M6.3 5.69a.942.942 0 0 1-.28-.7c0-.28.09-.52.28-.7.19-.18.42-.28.7-.28.28 0 .52.09.7.28.18.19.28.42.28.7 0 .28-.09.52-.28.7a1 1 0 0 1-.7.3c-.28 0-.52-.11-.7-.3zM8 7.99c-.02-.25-.11-.48-.31-.69-.2-.19-.42-.3-.69-.31H6c-.27.02-.48.13-.69.31-.2.2-.3.44-.31.69h1v3c.02.27.11.5.31.69.2.2.42.31.69.31h1c.27 0 .48-.11.69-.31.2-.19.3-.42.31-.69H8V7.98v.01zM7 2.3c-3.14 0-5.7 2.54-5.7 5.68 0 3.14 2.56 5.7 5.7 5.7s5.7-2.55 5.7-5.7c0-3.15-2.56-5.69-5.7-5.69v.01zM7 .98c3.86 0 7 3.14 7 7s-3.14 7-7 7-7-3.12-7-7 3.14-7 7-7z"></path></svg></span>노트</div><div class="admonitionContent_BuS1"><p>머지 충돌이 발생했을 때, Git 인덱스는 파일을 네 가지 상태로 관리</p><table><thead><tr><th>스테이지 번호</th><th>명칭</th><th>의미</th></tr></thead><tbody><tr><td>0</td><td>Normal</td><td>충돌이 없는 평범한 상태 (평소의 모든 파일은 이 상태)</td></tr><tr><td>1</td><td>Common Ancestor</td><td>두 브랜치가 갈라지기 전의 공통 조상(원본) 버전</td></tr><tr><td>2</td><td>Target (HEAD)</td><td>현재 내가 있는 브랜치의 수정 버전 (내 코드)</td></tr><tr><td>3</td><td>Source (MERGE_HEAD)</td><td>합치려고 가져온 브랜치의 수정 버전 (상대방 코드)</td></tr></tbody></table><div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic"># 공통 조상 버전의 내용을 파일로 저장해서 보고 싶을 때</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token function" style="color:#d73a49">git</span><span class="token plain"> show :1:README.md </span><span class="token operator" style="color:#393A34">&gt;</span><span class="token plain"> ancestor_version.md</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token comment" style="color:#999988;font-style:italic"># 상대방(Stage 3)의 내용으로 현재 파일을 완전히 덮어쓰고 싶을 때</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token function" style="color:#d73a49">git</span><span class="token plain"> checkout :3:README.md</span><br></span></code></pre></div></div></div></div>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="stash">Stash<a href="https://dream2405.github.io/blog/git-cheatsheet/#stash" class="hash-link" aria-label="Stash에 대한 직접 링크" title="Stash에 대한 직접 링크">​</a></h2>
+<p>Stash the changes in a dirty working directory away</p>
+<p>명령어</p>
+<ul>
+<li><code>git stash</code>: 워킹 디렉토리와 스테이징의 변경사항을 stash에 저장하고 HEAD 커밋 상태로 되돌림<!-- -->
+<ul>
+<li>추적되지 않는 파일은 워킹 디렉토리에 그대로 남음</li>
+</ul>
+</li>
+<li><code>git stash -u</code>: 추적되지 않는 파일도 stash에 저장<!-- -->
+<ul>
+<li>추적되지 않는 파일은 스테이징 영역으로 이동</li>
+<li>ignore된 파일은 stash에 저장되지 않음</li>
+</ul>
+</li>
+<li><code>git stash -a</code>: 무시된 파일까지 전부 다 stash에 저장</li>
+<li><code>git stash push -m "working on login"</code>: 메시지를 추가하여 stash에 저장</li>
+<li><code>git stash push path/to/file.js -m "이 파일만 잠시 보관"</code>: 특정 파일만 stash에 저장</li>
+<li><code>git stash list</code>: 스타시 목록 확인</li>
+<li><code>git stash apply</code>: 스타시를 적용</li>
+<li><code>git stash pop stash@{0}</code>: 특정 인덱스를 지정해서 꺼내기</li>
+<li><code>git stash drop stash@{0}</code>: 특정 인덱스를 지정해서 삭제</li>
+<li><code>git stash clear</code>: 모든 스타시를 삭제</li>
+<li><code>git stash show</code>: 스타시의 변경사항을 확인</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="리베이스">리베이스<a href="https://dream2405.github.io/blog/git-cheatsheet/#%EB%A6%AC%EB%B2%A0%EC%9D%B4%EC%8A%A4" class="hash-link" aria-label="리베이스에 대한 직접 링크" title="리베이스에 대한 직접 링크">​</a></h2>
+<p>Reapply commits on top of another base tip<br>
+<strong>연쇄적인 충돌 발생 가능성 주의</strong></p>
+<p>명령어</p>
+<ul>
+<li><code>git rebase -i HEAD~3</code>: 최근 3개 커밋을 수정 - 인터렉티브 리베이스<!-- -->
+<ul>
+<li>pick: 커밋을 그대로 사용</li>
+<li>reword: 커밋 메시지만 변경</li>
+<li>edit: 커밋 내용을 수정</li>
+<li>squash: 이전 커밋과 하나로 합치기 (지저분한 기록 정리용)</li>
+<li>drop: 커밋 삭제</li>
+</ul>
+</li>
+<li><code>git rebase --continue</code>: 리베이스 중단 후 리베이스 재개</li>
+<li><code>git rebase --abort</code>: 리베이스 중단</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="cherry-pick">Cherry-Pick<a href="https://dream2405.github.io/blog/git-cheatsheet/#cherry-pick" class="hash-link" aria-label="Cherry-Pick에 대한 직접 링크" title="Cherry-Pick에 대한 직접 링크">​</a></h2>
+<p>다른 브랜치의 특정 커밋 하나만 선택하여 적용하는 명령어</p>
+<p>명령어</p>
+<ul>
+<li><code>git cherry-pick &lt;커밋해시&gt;</code>: 특정 커밋을 현재 브랜치에 적용</li>
+<li><code>git cherry-pick &lt;해시1&gt; &lt;해시2&gt; &lt;해시3&gt;</code>: 여러 커밋을 순서대로 적용</li>
+<li><code>git cherry-pick A..B</code>: A 커밋 이후 B 커밋까지의 커밋들을 역순으로 적용</li>
+<li><code>git cherry-pick --continue</code>: 리베이스 중단 후 리베이스 재개</li>
+<li><code>git cherry-pick --abort</code>: 리베이스 중단</li>
+<li><code>git cherry-pick -n &lt;해시&gt;</code>: 커밋을 적용하지 않고 스테이징 영역으로 이동</li>
+<li><code>git cherry-pick -x &lt;해시&gt;</code>: 커밋 메시지 끝에 "(cherry picked from commit ...)" 문구 자동으로 추가</li>
+</ul>]]></content:encoded>
+            <category>Git</category>
+            <category>GitHub</category>
+            <category>Cheat Sheet</category>
+        </item>
         <item>
             <title><![CDATA[Calculating compilers]]></title>
             <link>https://dream2405.github.io/blog/calculating-compilers/</link>
