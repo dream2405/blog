@@ -76,7 +76,7 @@
 </li>
 </ul>
 <h4 class="anchor anchorWithStickyNavbar_LWe7" id="작동-과정-1">작동 과정<a href="https://dream2405.github.io/blog/yamong-security/#%EC%9E%91%EB%8F%99-%EA%B3%BC%EC%A0%95-1" class="hash-link" aria-label="작동 과정에 대한 직접 링크" title="작동 과정에 대한 직접 링크">​</a></h4>
-<p>![img](eBPF Manager Event Pipeline-2026-04-10-054224.png)</p>
+<p><img decoding="async" loading="lazy" alt="img" src="https://dream2405.github.io/blog/assets/images/dia2-c16fe77b972b51fafc9775c31118c79a.png" width="8191" height="1774" class="img_ev3q"></p>
 <p><strong>Phase 1. 초기화 및 환경 탐지 (Bootstrap)</strong></p>
 <ol>
 <li><strong>Agent 실행 및 설정 로드:</strong>&nbsp;구동 시 가장 먼저 설정값을 읽고, 현재 속해있는 쿠버네티스 클러스터의 API와 통신하기 위한 클라이언트를 준비</li>
