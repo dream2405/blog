@@ -33,8 +33,8 @@ export default defineConfig({
     inlineTocDeprecation(),
   ],
   i18n: {
-    locales: ["en"],
-    defaultLocale: "en",
+    locales: ["ko"],
+    defaultLocale: "ko",
     routing: {
       prefixDefaultLocale: false,
     },
@@ -68,13 +68,37 @@ export default defineConfig({
   },
   fonts: [
     {
-      name: "Google Sans Code",
-      cssVariable: "--font-google-sans-code",
-      provider: fontProviders.google(),
+      name: "RIDI Batang",
+      cssVariable: "--font-ridi-batang",
+      provider: fontProviders.local(),
+      fallbacks: ["serif"],
+      options: {
+        variants: [{
+          src: ['./src/assets/fonts/RIDIBatang.otf'],
+          weight: 400,
+          style: 'normal'
+        }]
+      }
+    },
+    {
+      provider: fontProviders.local(),
+      name: "D2Coding Ligature",
+      cssVariable: "--font-d2coding-ligature",
       fallbacks: ["monospace"],
-      weights: [300, 400, 500, 600, 700],
-      styles: ["normal", "italic"],
-      formats: ["woff", "ttf"],
+      options: {
+        variants: [
+          {
+            src: ['./src/assets/fonts/D2Coding-Ver1.4.0-20261003-ligature.ttf'],
+            weight: 400,
+            style: 'normal'
+          },
+          {
+            src: ['./src/assets/fonts/D2CodingBold-Ver1.4.0-20261003-ligature.ttf'],
+            weight: 700,
+            style: 'normal'
+          },
+        ]
+      }
     },
   ],
   env: {

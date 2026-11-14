@@ -28,9 +28,10 @@ export const GET: APIRoute = async ({ props, url }) => {
     return new Response(null, { status: 404, statusText: "Not found" });
   }
 
-  const fonts = fontData["--font-google-sans-code"];
+  const fonts = fontData["--font-ridi-batang"];
   const regularFontPath = getFontPathByWeight(fonts, 400);
-  const boldFontPath = getFontPathByWeight(fonts, 700);
+  // RIDI Batang ships a single weight, so reuse the regular file for bold.
+  const boldFontPath = getFontPathByWeight(fonts, 700) ?? regularFontPath;
 
   if (regularFontPath === undefined || boldFontPath === undefined) {
     throw new Error("Cannot find the font path.");
@@ -172,13 +173,13 @@ export const GET: APIRoute = async ({ props, url }) => {
       embedFont: true,
       fonts: [
         {
-          name: "Google Sans Code",
+          name: "RIDI Batang",
           data: regularData,
           weight: 400,
           style: "normal",
         },
         {
-          name: "Google Sans Code",
+          name: "RIDI Batang",
           data: boldData,
           weight: 700,
           style: "normal",

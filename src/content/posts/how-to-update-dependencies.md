@@ -5,7 +5,7 @@ pubDatetime: 2023-07-20T15:33:05.569Z
 modDatetime: 2026-11-01T10:00:00.000Z
 slug: how-to-update-dependencies
 featured: false
-draft: false
+draft: true
 ogImage: ../../assets/images/forrest-gump-quote.png
 tags:
   - FAQ

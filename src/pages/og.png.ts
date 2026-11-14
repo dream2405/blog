@@ -6,9 +6,10 @@ import { getFontPathByWeight } from "@/utils/getFontPathByWeight";
 import config from "@/config";
 
 export const GET: APIRoute = async context => {
-  const fonts = fontData["--font-google-sans-code"];
+  const fonts = fontData["--font-ridi-batang"];
   const regularFontPath = getFontPathByWeight(fonts, 400);
-  const boldFontPath = getFontPathByWeight(fonts, 700);
+  // RIDI Batang ships a single weight, so reuse the regular file for bold.
+  const boldFontPath = getFontPathByWeight(fonts, 700) ?? regularFontPath;
 
   if (regularFontPath === undefined || boldFontPath === undefined) {
     throw new Error("Cannot find the font path.");
@@ -35,7 +36,7 @@ export const GET: APIRoute = async context => {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontFamily: "Google Sans Code",
+          fontFamily: "RIDI Batang",
         },
         children: [
           {
@@ -154,13 +155,13 @@ export const GET: APIRoute = async context => {
       embedFont: true,
       fonts: [
         {
-          name: "Google Sans Code",
+          name: "RIDI Batang",
           data: regularData,
           weight: 400,
           style: "normal",
         },
         {
-          name: "Google Sans Code",
+          name: "RIDI Batang",
           data: boldData,
           weight: 700,
           style: "normal",

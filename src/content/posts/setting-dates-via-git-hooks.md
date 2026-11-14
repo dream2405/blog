@@ -4,7 +4,7 @@ pubDatetime: 2024-01-03T20:40:08Z
 modDatetime: 2026-11-01T10:00:00Z
 title: How to use Git Hooks to set Created and Modified Dates
 featured: false
-draft: false
+draft: true
 tags:
   - docs
   - FAQ
